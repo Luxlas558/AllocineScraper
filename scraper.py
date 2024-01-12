@@ -561,12 +561,11 @@ def afficher_interface():
         commande = "python scraper.py tri"
         subprocess.run(commande, shell=True)
         root.update_idletasks()
-    
+
     def lancer_clean():
         commande = "python scraper.py clean"
         subprocess.run(commande, shell=True)
         root.update_idletasks()
-
 
     def update_genres(*args):
         selected_type_media = type_media_var.get()
@@ -790,7 +789,7 @@ def main():
                         scrape_page(parser, page_url, max_page, 'serie')
                     else:
                         print(f"Unknown genre. Use one of the following genres: {' '.join(
-                            ['cinema', 'action', 'animation', 'aventure', 'biopic', 'comedie', 'comedie-dramatique',
+                            ['action', 'animation', 'aventure', 'biopic', 'comedie', 'comedie-dramatique',
                              'drame', 'epouvante-horreur', 'espionnage', 'famille', 'fantastique', 'historique',
                              'judiciaire', 'policier', 'romance', 'science-fiction', 'thriller'])}.")
                         return
@@ -818,7 +817,7 @@ def main():
                         pass
 
             elif command == 'film-all':
-                genres_to_scrape = ['cinema', 'action', 'animation', 'aventure', 'biopic', 'comedie', 'comedie-dramatique',
+                genres_to_scrape = ['action', 'animation', 'aventure', 'biopic', 'comedie', 'comedie-dramatique',
                                     'drame', 'epouvante-horreur', 'famille', 'fantastique', 'guerre', 'historique',
                                     'musical', 'policier', 'romance', 'science-fiction', 'thriller', 'western']
 
@@ -837,7 +836,7 @@ def main():
             elif command == 'all':
                 try:
                     print("Executing film-all command...")
-                    genres_to_scrape_film = ['cinema', 'action', 'animation', 'aventure',           'biopic', 'comedie', 'comedie-dramatique',
+                    genres_to_scrape_film = ['action', 'animation', 'aventure',           'biopic', 'comedie', 'comedie-dramatique',
                                              'drame', 'epouvante-horreur', 'famille', 'fantastique', 'guerre', 'historique',
                                              'musical', 'policier', 'romance', 'science-fiction', 'thriller', 'western']
 
@@ -889,7 +888,7 @@ def main():
             elif command == 'film':
                 if len(sys.argv) > 2:
                     genre_to_scrape = sys.argv[2].lower()
-                    if genre_to_scrape in ['cinema', 'action', 'animation', 'aventure', 'biopic', 'comedie', 'comedie-dramatique',
+                    if genre_to_scrape in ['action', 'animation', 'aventure', 'biopic', 'comedie', 'comedie-dramatique',
                                            'drame', 'epouvante-horreur', 'famille', 'fantastique', 'guerre', 'historique',
                                            'musical', 'policier', 'romance', 'science-fiction', 'thriller', 'western']:
                         page_url = parser['Urls'][f'page_url_film_{
@@ -899,11 +898,15 @@ def main():
                         scrape_page(parser, page_url, max_page, 'action')
                     else:
                         print(f"Unknown genre. Use one of the following genres: {' '.join(
-                            ['cinema', 'action', 'animation', 'aventure', 'biopic', 'comedie', 'comedie-dramatique', 'drame', 'epouvante-horreur', 'famille', 'fantastique', 'guerre', 'historique', 'musical', 'policier', 'romance', 'science-fiction', 'thriller', 'western'])}.")
+                            ['action', 'animation', 'aventure', 'biopic', 'comedie', 'comedie-dramatique', 'drame', 'epouvante-horreur', 'famille', 'fantastique', 'guerre', 'historique', 'musical', 'policier', 'romance', 'science-fiction', 'thriller', 'western'])}.")
                         return
-                else:
-                    afficher_interface()
-                    return
+            elif command == 'interface':
+                afficher_interface()
+                return
+
+            else:
+                print(f"Unknown command: {command}.")
+                return
 
     except Exception as e:
         pass
