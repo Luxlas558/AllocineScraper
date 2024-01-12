@@ -19,7 +19,7 @@ from urllib.parse import quote
 import tkinter as tk
 from tkinter import filedialog
 from tkinter import ttk
-
+import subprocess
 
 
 def download_and_extract_chromedriver():
@@ -83,7 +83,6 @@ def download_and_save_image(url, title):
     else:
         print(f"Échec du téléchargement de l'image pour {
               title}. Code de statut : {response.status_code}")
-
 
 
 def url_to_parse(url="") -> BeautifulSoup:
@@ -425,80 +424,87 @@ def clean_alldata():
 
 
 def trier_series_films(data):
-   initial_covers_directory = 'Covers'
-   series_data = {"data_number": 0, "data": []}
-   films_data = {"data_number": 0, "data": []}
+    initial_covers_directory = 'Covers'
+    series_data = {"data_number": 0, "data": []}
+    films_data = {"data_number": 0, "data": []}
 
-   for item in data['data']:
-       if item['type'] == 'serie':
-           series_data['data'].append(item)
-       elif item['type'] == 'film':
-           films_data['data'].append(item)
+    for item in data['data']:
+        if item['type'] == 'serie':
+            series_data['data'].append(item)
+        elif item['type'] == 'film':
+            films_data['data'].append(item)
 
-   series_data['data_number'] = len(series_data['data'])
-   films_data['data_number'] = len(films_data['data'])
+    series_data['data_number'] = len(series_data['data'])
+    films_data['data_number'] = len(films_data['data'])
 
-   if not os.path.exists('Tri'):
-       os.makedirs('Tri')
+    if not os.path.exists('Tri'):
+        os.makedirs('Tri')
 
-   if not os.path.exists('Tri/series-films'):
-       os.makedirs('Tri/series-films')
+    if not os.path.exists('Tri/series-films'):
+        os.makedirs('Tri/series-films')
 
-   if not os.path.exists('Tri/series-films/cover_serie'):
-       os.makedirs('Tri/series-films/cover_serie')
-   if not os.path.exists('Tri/series-films/cover_film'):
-       os.makedirs('Tri/series-films/cover_film')
+    if not os.path.exists('Tri/series-films/cover_serie'):
+        os.makedirs('Tri/series-films/cover_serie')
+    if not os.path.exists('Tri/series-films/cover_film'):
+        os.makedirs('Tri/series-films/cover_film')
 
-   for i, item in enumerate(data['data']):
-       if 'image' in item:
-           cover_path = os.path.join(initial_covers_directory, os.path.basename(item['image']))
-           cover_type = 'cover_serie' if item['type'] == 'serie' else 'cover_film'
+    for i, item in enumerate(data['data']):
+        if 'image' in item:
+            cover_path = os.path.join(
+                initial_covers_directory, os.path.basename(item['image']))
+            cover_type = 'cover_serie' if item['type'] == 'serie' else 'cover_film'
 
-           print(f"Déplacement de l'image {cover_path} vers Tri/series-films/{cover_type}...")
+            print(f"Déplacement de l'image {
+                  cover_path} vers Tri/series-films/{cover_type}...")
 
-           if os.path.exists(cover_path):
-               destination_directory = os.path.join('Tri/series-films', cover_type)
-               if not os.path.exists(destination_directory):
-                  os.makedirs(destination_directory)
+            if os.path.exists(cover_path):
+                destination_directory = os.path.join(
+                    'Tri/series-films', cover_type)
+                if not os.path.exists(destination_directory):
+                    os.makedirs(destination_directory)
 
-               destination_path = os.path.join(destination_directory, os.path.basename(cover_path))
+                destination_path = os.path.join(
+                    destination_directory, os.path.basename(cover_path))
 
-               try:
-                  if os.path.exists(destination_path):
-                      os.remove(destination_path)
-                      print(f"Image existante supprimée à {destination_path}")
+                try:
+                    if os.path.exists(destination_path):
+                        os.remove(destination_path)
+                        print(f"Image existante supprimée à {
+                              destination_path}")
 
-                  shutil.move(cover_path, destination_path)
-                  print(f"Image déplacée avec succès à {destination_path}")
+                    shutil.move(cover_path, destination_path)
+                    print(f"Image déplacée avec succès à {destination_path}")
 
-                  
-                  data['data'][i]['image'] = os.path.join(destination_directory, os.path.basename(destination_path))
+                    data['data'][i]['image'] = os.path.join(
+                        destination_directory, os.path.basename(destination_path))
 
-               except Exception as e:
-                  print(f"Erreur lors du déplacement de l'image : {e}")
-           else:
-               pass
+                except Exception as e:
+                    print(f"Erreur lors du déplacement de l'image : {e}")
+            else:
+                pass
 
-   covers_directory = initial_covers_directory
-   try:
-       for file_name in os.listdir(covers_directory):
-           file_path = os.path.join(covers_directory, file_name)
-           try:
-               if os.path.isfile(file_path):
-                  os.unlink(file_path)
-               elif os.path.isdir(file_path):
-                  shutil.rmtree(file_path)
-           except Exception as e:
-               print(f"Erreur lors de la suppression du fichier/dossier {file_path}: {e}")
+    covers_directory = initial_covers_directory
+    try:
+        for file_name in os.listdir(covers_directory):
+            file_path = os.path.join(covers_directory, file_name)
+            try:
+                if os.path.isfile(file_path):
+                    os.unlink(file_path)
+                elif os.path.isdir(file_path):
+                    shutil.rmtree(file_path)
+            except Exception as e:
+                print(
+                    f"Erreur lors de la suppression du fichier/dossier {file_path}: {e}")
 
-   except Exception as e:
-       print(f"Erreur lors de la suppression du contenu du dossier {covers_directory}: {e}")
+    except Exception as e:
+        print(f"Erreur lors de la suppression du contenu du dossier {
+              covers_directory}: {e}")
 
-   with open('Tri/series-films/film.json', 'w', encoding='utf-8') as films_file:
-       json.dump(films_data, films_file, ensure_ascii=False, indent=4)
+    with open('Tri/series-films/film.json', 'w', encoding='utf-8') as films_file:
+        json.dump(films_data, films_file, ensure_ascii=False, indent=4)
 
-   with open('Tri/series-films/serie.json', 'w', encoding='utf-8') as series_file:
-       json.dump(series_data, series_file, ensure_ascii=False, indent=4)
+    with open('Tri/series-films/serie.json', 'w', encoding='utf-8') as series_file:
+        json.dump(series_data, series_file, ensure_ascii=False, indent=4)
 
 
 def scrape_page(parser, url_template, max_page, page_type):
@@ -525,16 +531,42 @@ def scrape_page(parser, url_template, max_page, page_type):
                 data_to_json(updated_data, output_file)
             else:
                 data_to_json(updated_data, output_file)
-                
+
 
 def afficher_interface():
     def lancer_scraper():
         site = site_var.get()
         type_media = type_media_var.get()
         genre = genre_var.get()
-        print(f"Site sélectionné : {site}")
-        print(f"Type de média sélectionné : {type_media}")
-        print(f"Genre sélectionné : {genre}")
+
+        if type_media == 'Film':
+            commande = f"python scraper.py {type_media} {genre}"
+        elif type_media == 'Serie':
+            commande = f"python scraper.py {type_media} {genre} --tri"
+
+        subprocess.run(commande, shell=True)
+        root.update_idletasks()
+
+    def lancer_all():
+        commande = "python scraper.py all"
+        subprocess.run(commande, shell=True)
+        root.update_idletasks()
+
+    def lancer_everyall():
+        commande = "python scraper.py everyall"
+        subprocess.run(commande, shell=True)
+        root.update_idletasks()
+
+    def lancer_tri():
+        commande = "python scraper.py tri"
+        subprocess.run(commande, shell=True)
+        root.update_idletasks()
+    
+    def lancer_clean():
+        commande = "python scraper.py clean"
+        subprocess.run(commande, shell=True)
+        root.update_idletasks()
+
 
     def update_genres(*args):
         selected_type_media = type_media_var.get()
@@ -551,38 +583,59 @@ def afficher_interface():
     frame = ttk.Frame(root, padding="10")
     frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
 
-    ttk.Label(frame, text="Sélectionnez le site :").grid(row=0, column=0, pady=10, padx=10)
-    ttk.Label(frame, text="Sélectionnez le type de média (film/serie) :").grid(row=1, column=0, pady=10, padx=10)
-    ttk.Label(frame, text="Sélectionnez le genre :").grid(row=2, column=0, pady=10, padx=10)
+    ttk.Label(frame, text="Sélectionnez le site :").grid(
+        row=0, column=0, pady=10, padx=10, sticky="w")
+    ttk.Label(frame, text="Sélectionnez le type de média (film/serie) :").grid(row=1,
+                                                                               column=0, pady=10, padx=10, sticky="w")
+    ttk.Label(frame, text="Sélectionnez le genre :").grid(
+        row=2, column=0, pady=10, padx=10, sticky="w")
 
     sites = ["Allociné"]
     site_var = tk.StringVar(value=sites[0])
-    site_option_menu = ttk.Combobox(frame, textvariable=site_var, values=sites, state="readonly")
-    site_option_menu.grid(row=0, column=1, pady=10, padx=10)
+    site_option_menu = ttk.Combobox(
+        frame, textvariable=site_var, values=sites, state="readonly")
+    site_option_menu.grid(row=0, column=1, pady=10, padx=10, sticky="ew")
 
     types_media = ["Film", "Serie"]
     type_media_var = tk.StringVar(value=types_media[0])
     type_media_var.trace_add('write', update_genres)
-    type_media_option_menu = ttk.Combobox(frame, textvariable=type_media_var, values=types_media, state="readonly")
-    type_media_option_menu.grid(row=1, column=1, pady=10, padx=10)
+    type_media_option_menu = ttk.Combobox(
+        frame, textvariable=type_media_var, values=types_media, state="readonly")
+    type_media_option_menu.grid(row=1, column=1, pady=10, padx=10, sticky="ew")
 
     genres_film = ['Cinema', 'Action', 'Animation', 'Aventure', 'Biopic', 'Comedie', 'Comedie-dramatique',
-               'Drame', 'Epouvante-horreur', 'Famille', 'Fantastique', 'Guerre', 'Historique',
-               'Musical', 'Policier', 'Romance', 'Science-fiction', 'Thriller', 'Western']
+                   'Drame', 'Epouvante-horreur', 'Famille', 'Fantastique', 'Guerre', 'Historique',
+                   'Musical', 'Policier', 'Romance', 'Science-fiction', 'Thriller', 'Western']
 
     genres_serie = ['Meilleur', 'Action', 'Animation', 'Aventure', 'Biopic', 'Comedie', 'Comedie-dramatique',
-                'Drame', 'Epouvante-horreur', 'Espionnage', 'Famille', 'Fantastique', 'Historique',
-                'Judiciaire', 'Policier', 'Romance', 'Science-fiction', 'Thriller']
+                    'Drame', 'Epouvante-horreur', 'Espionnage', 'Famille', 'Fantastique', 'Historique',
+                    'Judiciaire', 'Policier', 'Romance', 'Science-fiction', 'Thriller']
 
-    global genre_var 
+    global genre_var
     genre_var = tk.StringVar(value=genres_film[0])
-    global genre_menu 
-    genre_menu = ttk.Combobox(frame, textvariable=genre_var, values=genres_film, state="readonly")
-    genre_menu.grid(row=2, column=1, pady=10, padx=10)
+    global genre_menu
+    genre_menu = ttk.Combobox(
+        frame, textvariable=genre_var, values=genres_film, state="readonly")
+    genre_menu.grid(row=2, column=1, pady=10, padx=10, sticky="ew")
 
-    ttk.Button(frame, text="Lancer le scraper", command=lancer_scraper).grid(row=3, column=0, columnspan=2, pady=20)
+    ttk.Button(frame, text="Lancer le scraper", command=lancer_scraper).grid(
+        row=3, column=0, columnspan=2, pady=20, sticky="ew")
+    ttk.Button(frame, text="Lancer all", command=lancer_all).grid(
+        row=4, column=0, pady=10, padx=10, sticky="ew")
+    ttk.Button(frame, text="Lancer everyall", command=lancer_everyall).grid(
+        row=4, column=1, pady=10, padx=10, sticky="ew")
+    ttk.Button(frame, text="Lancer tri", command=lancer_tri).grid(
+        row=5, column=0, pady=10, padx=10, sticky="ew")
+    ttk.Button(frame, text="Lancer clean", command=lancer_clean).grid(
+        row=5, column=1, pady=10, padx=10, sticky="ew")
+
+    for i in range(5):
+        frame.grid_rowconfigure(i, weight=1)
+        frame.grid_columnconfigure(0, weight=1)
+        frame.grid_columnconfigure(1, weight=1)
 
     root.mainloop()
+
 
 def main():
     parser = ConfigParser()
@@ -619,12 +672,13 @@ def main():
                              'musical', 'policier', 'romance', 'science-fiction', 'thriller', 'western']:
                 page_url = parser['Urls'][f'page_url_{command}']
                 max_page = int(parser['Urls'][f'page_number_{command}'])
-                scrape_page(parser, page_url, max_page, 'action')    
+                scrape_page(parser, page_url, max_page, 'action')
 
             elif command == 'help':
                 print("List of commands:")
                 print("- clean: Clean data.json and the Covers folder.")
-                print("- clean-all: Clean data.json, the Covers folder and the Tri folder.")
+                print(
+                    "- clean-all: Clean data.json, the Covers folder and the Tri folder.")
                 print("- serie [genre]: Scrape best series pages by genre.")
                 print("- film [genre]: Scrape best film pages by genre.")
                 print("- tri: Tri series and films.")
@@ -657,10 +711,10 @@ def main():
                 print("- thriller: Scrape thriller pages.")
                 print("- western: Scrape western pages.")
                 return
-            
+
             elif command == 'everyserie':
-                
-                try :
+
+                try:
                     print("Executing everyserie command...")
                     page_url = parser['Urls']['page_url_everyserie']
                     max_page = int(parser['Urls']['page_number_everyserie'])
@@ -672,13 +726,14 @@ def main():
                     trier_series_films(data)
 
                     print("Executing clean command...")
-                    clean_data()    
-                except :
-                    print("An error occured while executing everyserie command. Please check your internet connection.")
-                    
+                    clean_data()
+                except:
+                    print(
+                        "An error occured while executing everyserie command. Please check your internet connection.")
+
             elif command == 'everyfilm':
-                
-                try :
+
+                try:
                     print("Executing everyfilm command...")
                     page_url = parser['Urls']['page_url_everyfilm']
                     max_page = int(parser['Urls']['page_number_everyfilm'])
@@ -690,21 +745,26 @@ def main():
                     trier_series_films(data)
 
                     print("Executing clean command...")
-                    clean_data()    
-                except :
-                    print("An error occured while executing everyfilm command. Please check your internet connection.")        
+                    clean_data()
+                except:
+                    print(
+                        "An error occured while executing everyfilm command. Please check your internet connection.")
 
             elif command == 'everyall':
                 try:
                     print("Executing everyfilm command...")
                     page_url_everyfilm = parser['Urls']['page_url_everyfilm']
-                    max_page_everyfilm = int(parser['Urls']['page_number_everyfilm'])
-                    scrape_page(parser, page_url_everyfilm, max_page_everyfilm, 'action')
+                    max_page_everyfilm = int(
+                        parser['Urls']['page_number_everyfilm'])
+                    scrape_page(parser, page_url_everyfilm,
+                                max_page_everyfilm, 'action')
 
                     print("Executing everyserie command...")
                     page_url_everyserie = parser['Urls']['page_url_everyserie']
-                    max_page_everyserie = int(parser['Urls']['page_number_everyserie'])
-                    scrape_page(parser, page_url_everyserie, max_page_everyserie, 'serie')
+                    max_page_everyserie = int(
+                        parser['Urls']['page_number_everyserie'])
+                    scrape_page(parser, page_url_everyserie,
+                                max_page_everyserie, 'serie')
 
                     with open('data.json', 'r', encoding='utf-8') as file:
                         data = json.load(file)
@@ -714,8 +774,8 @@ def main():
                     print("Executing clean command...")
                     clean_data()
                 except:
-                    print("An error occurred while executing everyall command. Please check your internet connection.")         
-                    
+                    print(
+                        "An error occurred while executing everyall command. Please check your internet connection.")
 
             elif command == 'serie':
                 if len(sys.argv) > 2:
@@ -778,8 +838,8 @@ def main():
                 try:
                     print("Executing film-all command...")
                     genres_to_scrape_film = ['cinema', 'action', 'animation', 'aventure',           'biopic', 'comedie', 'comedie-dramatique',
-                                            'drame', 'epouvante-horreur', 'famille', 'fantastique', 'guerre', 'historique',
-                                            'musical', 'policier', 'romance', 'science-fiction', 'thriller', 'western']
+                                             'drame', 'epouvante-horreur', 'famille', 'fantastique', 'guerre', 'historique',
+                                             'musical', 'policier', 'romance', 'science-fiction', 'thriller', 'western']
 
                     for genre in genres_to_scrape_film:
                         page_url_key_film = f'page_url_film_{genre}'
@@ -787,7 +847,8 @@ def main():
 
                         if page_url_key_film in parser['Urls'] and max_page_key_film in parser['Urls']:
                             page_url_film = parser['Urls'][page_url_key_film]
-                            max_page_film = int(parser['Urls'][max_page_key_film])
+                            max_page_film = int(
+                                parser['Urls'][max_page_key_film])
                             scrape_page(parser, page_url_film,
                                         max_page_film, 'action')
 
@@ -796,8 +857,8 @@ def main():
 
                     print("Executing serie-all command...")
                     genres_to_scrape_serie = ['meilleur', 'action', 'animation', 'aventure', 'biopic', 'comedie', 'comedie-dramatique',
-                                            'drame', 'epouvante-horreur', 'espionnage', 'famille', 'fantastique', 'historique',
-                                            'judiciaire', 'policier', 'romance', 'science-fiction', 'thriller']
+                                              'drame', 'epouvante-horreur', 'espionnage', 'famille', 'fantastique', 'historique',
+                                              'judiciaire', 'policier', 'romance', 'science-fiction', 'thriller']
 
                     for genre in genres_to_scrape_serie:
                         page_url_key_serie = f'page_url_serie_{genre}'
@@ -823,12 +884,12 @@ def main():
                     clean_data()
 
                 except Exception as e:
-                    print(f"An error occurred: {e}")            
+                    print(f"An error occurred: {e}")
 
             elif command == 'film':
                 if len(sys.argv) > 2:
                     genre_to_scrape = sys.argv[2].lower()
-                    if genre_to_scrape in [ 'cinema','action', 'animation', 'aventure', 'biopic', 'comedie', 'comedie-dramatique',
+                    if genre_to_scrape in ['cinema', 'action', 'animation', 'aventure', 'biopic', 'comedie', 'comedie-dramatique',
                                            'drame', 'epouvante-horreur', 'famille', 'fantastique', 'guerre', 'historique',
                                            'musical', 'policier', 'romance', 'science-fiction', 'thriller', 'western']:
                         page_url = parser['Urls'][f'page_url_film_{
@@ -838,7 +899,7 @@ def main():
                         scrape_page(parser, page_url, max_page, 'action')
                     else:
                         print(f"Unknown genre. Use one of the following genres: {' '.join(
-                            ['cinema','action', 'animation', 'aventure', 'biopic', 'comedie', 'comedie-dramatique', 'drame', 'epouvante-horreur', 'famille', 'fantastique', 'guerre', 'historique', 'musical', 'policier', 'romance', 'science-fiction', 'thriller', 'western'])}.")
+                            ['cinema', 'action', 'animation', 'aventure', 'biopic', 'comedie', 'comedie-dramatique', 'drame', 'epouvante-horreur', 'famille', 'fantastique', 'guerre', 'historique', 'musical', 'policier', 'romance', 'science-fiction', 'thriller', 'western'])}.")
                         return
                 else:
                     afficher_interface()
@@ -867,5 +928,5 @@ if __name__ == "__main__":
                   data_file_path}. Le fichier peut être vide ou corrompu.")
         except Exception as e:
             pass
-        
+
     afficher_interface()
