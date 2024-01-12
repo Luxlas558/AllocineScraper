@@ -16,6 +16,10 @@ from webdriver_manager.chrome import ChromeDriverManager
 import sys
 import shutil
 from urllib.parse import quote
+import tkinter as tk
+from tkinter import filedialog
+from tkinter import ttk
+
 
 
 def download_and_extract_chromedriver():
@@ -521,7 +525,64 @@ def scrape_page(parser, url_template, max_page, page_type):
                 data_to_json(updated_data, output_file)
             else:
                 data_to_json(updated_data, output_file)
+                
 
+def afficher_interface():
+    def lancer_scraper():
+        site = site_var.get()
+        type_media = type_media_var.get()
+        genre = genre_var.get()
+        print(f"Site sélectionné : {site}")
+        print(f"Type de média sélectionné : {type_media}")
+        print(f"Genre sélectionné : {genre}")
+
+    def update_genres(*args):
+        selected_type_media = type_media_var.get()
+        new_genres = genres_film if selected_type_media == 'Film' else genres_serie
+        genre_menu['values'] = new_genres
+        genre_var.set(new_genres[0])
+
+    root = tk.Tk()
+    root.title("Scraper interface")
+
+    style = ttk.Style()
+    style.theme_use('clam')
+
+    frame = ttk.Frame(root, padding="10")
+    frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+
+    ttk.Label(frame, text="Sélectionnez le site :").grid(row=0, column=0, pady=10, padx=10)
+    ttk.Label(frame, text="Sélectionnez le type de média (film/serie) :").grid(row=1, column=0, pady=10, padx=10)
+    ttk.Label(frame, text="Sélectionnez le genre :").grid(row=2, column=0, pady=10, padx=10)
+
+    sites = ["Allociné"]
+    site_var = tk.StringVar(value=sites[0])
+    site_option_menu = ttk.Combobox(frame, textvariable=site_var, values=sites, state="readonly")
+    site_option_menu.grid(row=0, column=1, pady=10, padx=10)
+
+    types_media = ["Film", "Serie"]
+    type_media_var = tk.StringVar(value=types_media[0])
+    type_media_var.trace_add('write', update_genres)
+    type_media_option_menu = ttk.Combobox(frame, textvariable=type_media_var, values=types_media, state="readonly")
+    type_media_option_menu.grid(row=1, column=1, pady=10, padx=10)
+
+    genres_film = ['Cinema', 'Action', 'Animation', 'Aventure', 'Biopic', 'Comedie', 'Comedie-dramatique',
+               'Drame', 'Epouvante-horreur', 'Famille', 'Fantastique', 'Guerre', 'Historique',
+               'Musical', 'Policier', 'Romance', 'Science-fiction', 'Thriller', 'Western']
+
+    genres_serie = ['Meilleur', 'Action', 'Animation', 'Aventure', 'Biopic', 'Comedie', 'Comedie-dramatique',
+                'Drame', 'Epouvante-horreur', 'Espionnage', 'Famille', 'Fantastique', 'Historique',
+                'Judiciaire', 'Policier', 'Romance', 'Science-fiction', 'Thriller']
+
+    global genre_var 
+    genre_var = tk.StringVar(value=genres_film[0])
+    global genre_menu 
+    genre_menu = ttk.Combobox(frame, textvariable=genre_var, values=genres_film, state="readonly")
+    genre_menu.grid(row=2, column=1, pady=10, padx=10)
+
+    ttk.Button(frame, text="Lancer le scraper", command=lancer_scraper).grid(row=3, column=0, columnspan=2, pady=20)
+
+    root.mainloop()
 
 def main():
     parser = ConfigParser()
@@ -780,8 +841,7 @@ def main():
                             ['cinema','action', 'animation', 'aventure', 'biopic', 'comedie', 'comedie-dramatique', 'drame', 'epouvante-horreur', 'famille', 'fantastique', 'guerre', 'historique', 'musical', 'policier', 'romance', 'science-fiction', 'thriller', 'western'])}.")
                         return
                 else:
-                    print(f"Unknown genre. Use one of the following genres: {' '.join(
-                        ['cinema','action', 'animation', 'aventure', 'biopic', 'comedie', 'comedie-dramatique', 'drame', 'epouvante-horreur', 'famille', 'fantastique', 'guerre', 'historique', 'musical', 'policier', 'romance', 'science-fiction', 'thriller', 'western'])}.")
+                    afficher_interface()
                     return
 
     except Exception as e:
@@ -807,3 +867,5 @@ if __name__ == "__main__":
                   data_file_path}. Le fichier peut être vide ou corrompu.")
         except Exception as e:
             pass
+        
+    afficher_interface()
