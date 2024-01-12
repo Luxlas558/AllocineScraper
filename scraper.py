@@ -676,8 +676,7 @@ def main():
             elif command == 'help':
                 print("List of commands:")
                 print("- clean: Clean data.json and the Covers folder.")
-                print(
-                    "- clean-all: Clean data.json, the Covers folder and the Tri folder.")
+                print("- clean-all: Clean data.json, the Covers folder and the Tri folder.")
                 print("- serie [genre]: Scrape best series pages by genre.")
                 print("- film [genre]: Scrape best film pages by genre.")
                 print("- tri: Tri series and films.")
@@ -688,6 +687,7 @@ def main():
                 print("- everyserie : Scrape all pages of series.")
                 print("- everyfilm : Scrape all pages of films.")
                 print("- everyall : Scrape all pages of series and films.")
+                print("- interface : Start the interface.")
                 print("-------------------------------------")
                 print("List of genres:")
                 print("- cinema: Scrape cinema pages.")
@@ -931,5 +931,3 @@ if __name__ == "__main__":
                   data_file_path}. Le fichier peut être vide ou corrompu.")
         except Exception as e:
             pass
-
-    afficher_interface()
