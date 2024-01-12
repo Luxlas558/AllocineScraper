@@ -553,7 +553,7 @@ def main():
                 max_page = int(parser['Urls'][f'page_number_serie_{command}'])
                 scrape_page(parser, page_url, max_page, 'serie')
 
-            elif command in ['cinema', 'action', 'animation', 'aventure', 'biopic', 'comedie', 'comedie-dramatique',
+            elif command in ['action', 'animation', 'aventure', 'biopic', 'comedie', 'comedie-dramatique',
                              'drame', 'epouvante-horreur', 'famille', 'fantastique', 'guerre', 'historique',
                              'musical', 'policier', 'romance', 'science-fiction', 'thriller', 'western']:
                 page_url = parser['Urls'][f'page_url_{command}']
@@ -669,7 +669,7 @@ def main():
                         scrape_page(parser, page_url, max_page, 'serie')
                     else:
                         print(f"Unknown genre. Use one of the following genres: {' '.join(
-                            ['cinema', 'action', 'animation', 'aventure', 'biopic', 'comedie', 'comedie-dramatique',
+                            ['action', 'animation', 'aventure', 'biopic', 'comedie', 'comedie-dramatique',
                              'drame', 'epouvante-horreur', 'espionnage', 'famille', 'fantastique', 'historique',
                              'judiciaire', 'policier', 'romance', 'science-fiction', 'thriller'])}.")
                         return
@@ -697,7 +697,7 @@ def main():
                         pass
 
             elif command == 'film-all':
-                genres_to_scrape = ['cinema', 'action', 'animation', 'aventure', 'biopic', 'comedie', 'comedie-dramatique',
+                genres_to_scrape = ['action', 'animation', 'aventure', 'biopic', 'comedie', 'comedie-dramatique',
                                     'drame', 'epouvante-horreur', 'famille', 'fantastique', 'guerre', 'historique',
                                     'musical', 'policier', 'romance', 'science-fiction', 'thriller', 'western']
 
@@ -716,7 +716,7 @@ def main():
             elif command == 'all':
                 try:
                     print("Executing film-all command...")
-                    genres_to_scrape_film = ['cinema', 'action', 'animation', 'aventure',           'biopic', 'comedie', 'comedie-dramatique',
+                    genres_to_scrape_film = ['action', 'animation', 'aventure',           'biopic', 'comedie', 'comedie-dramatique',
                                             'drame', 'epouvante-horreur', 'famille', 'fantastique', 'guerre', 'historique',
                                             'musical', 'policier', 'romance', 'science-fiction', 'thriller', 'western']
 
@@ -767,7 +767,7 @@ def main():
             elif command == 'film':
                 if len(sys.argv) > 2:
                     genre_to_scrape = sys.argv[2].lower()
-                    if genre_to_scrape in [ 'cinema','action', 'animation', 'aventure', 'biopic', 'comedie', 'comedie-dramatique',
+                    if genre_to_scrape in ['action', 'animation', 'aventure', 'biopic', 'comedie', 'comedie-dramatique',
                                            'drame', 'epouvante-horreur', 'famille', 'fantastique', 'guerre', 'historique',
                                            'musical', 'policier', 'romance', 'science-fiction', 'thriller', 'western']:
                         page_url = parser['Urls'][f'page_url_film_{
@@ -777,11 +777,11 @@ def main():
                         scrape_page(parser, page_url, max_page, 'action')
                     else:
                         print(f"Unknown genre. Use one of the following genres: {' '.join(
-                            ['cinema','action', 'animation', 'aventure', 'biopic', 'comedie', 'comedie-dramatique', 'drame', 'epouvante-horreur', 'famille', 'fantastique', 'guerre', 'historique', 'musical', 'policier', 'romance', 'science-fiction', 'thriller', 'western'])}.")
+                            ['action', 'animation', 'aventure', 'biopic', 'comedie', 'comedie-dramatique', 'drame', 'epouvante-horreur', 'famille', 'fantastique', 'guerre', 'historique', 'musical', 'policier', 'romance', 'science-fiction', 'thriller', 'western'])}.")
                         return
                 else:
                     print(f"Unknown genre. Use one of the following genres: {' '.join(
-                        ['cinema','action', 'animation', 'aventure', 'biopic', 'comedie', 'comedie-dramatique', 'drame', 'epouvante-horreur', 'famille', 'fantastique', 'guerre', 'historique', 'musical', 'policier', 'romance', 'science-fiction', 'thriller', 'western'])}.")
+                        ['action', 'animation', 'aventure', 'biopic', 'comedie', 'comedie-dramatique', 'drame', 'epouvante-horreur', 'famille', 'fantastique', 'guerre', 'historique', 'musical', 'policier', 'romance', 'science-fiction', 'thriller', 'western'])}.")
                     return
 
     except Exception as e:
