@@ -142,6 +142,16 @@ Le script utilise ChromeDriver pour automatiser le navigateur Chrome. Si vous ne
 
 Le script prend en charge plusieurs commandes pour différents types de scraping. Voici la liste des commandes disponibles :
 
+## Interfacr
+
+Cette commande ouvre une interface graphique pour le scrapper pour eviter de taper les commandes :
+⚠️ Cette commande n'est pas encore stable, des bugs peuvents ce produire ⚠️
+⚠️ Toutes les commandes ne sont pas disponible sur l'interface graphique ⚠️
+
+```bash
+python scraper.py interface
+```
+
 ### Clean: 
 Cette commande nettoie le fichier data.json et le dossier Covers. Utilisez la commande suivante dans le terminal :
 
