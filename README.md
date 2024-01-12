@@ -182,7 +182,7 @@ La commande `serie-all` permet de scraper toutes les pages des séries pour chaq
 Utilisez la commande suivante dans le terminal :
 
 ```bash
-python script.py serie-all
+python scraper.py serie-all
 ```
 
 ## Film-all
@@ -191,7 +191,7 @@ La commande film-all permet de scraper toutes les pages des meilleurs films pour
 
 Utilisez la commande suivante dans le terminal :
 ```bash
-python script.py film-all
+python scraper.py film-all
 ```
 
 ## All
@@ -199,7 +199,7 @@ python script.py film-all
 La commande all permet de scraper toutes les pages, à la fois des séries et des films, pour chaque genre spécifié. Elle fait ensuite la commande tri pour trier les series et les films séparement. Ensuite elle exécute la commande clean pour supprimer le dossier Covers vide et data.json.
 
 ```bash
-python script.py all
+python scraper.py all
 ```
 
 ## Everyfilm
@@ -208,7 +208,7 @@ La commande everyfilm permet de scraper toutes les pages des films sans genre sp
 ⚠️ Cette commande prend beaucoup de temps à s'executer entierement ⚠️
 
 ```bash
-python script.py everyfilm
+python scraper.py everyfilm
 ```
 
 ## Everyserie
@@ -217,7 +217,7 @@ La commande everyserie permet de scraper toutes les pages des series sans genre 
 ⚠️ Cette commande prend beaucoup de temps à s'executer entierement ⚠️
 
 ```bash
-python script.py everyserie
+python scraper.py everyserie
 ```
 
 ## Everyall
@@ -226,7 +226,7 @@ La commande everyall permet de scraper toutes les pages des films et des series 
 ⚠️ Cette commande prend beaucoup de temps à s'executer entierement ⚠️
 
 ```bash
-python script.py everyall
+python scraper.py everyall
 ```
 
 
