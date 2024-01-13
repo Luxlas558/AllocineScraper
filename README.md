@@ -305,18 +305,25 @@ Le fichier de configuration **config.ini** est essentiel pour personnaliser le c
 Voici comment le configurer :
 
 ```ini
-[Url]
-page_url = https://www.allocine.fr/film/aucinema/?page=
-page_number = 1
+[Urls]
+
+page_url_film_cinema = https://www.allocine.fr/film/aucinema/?page=
+start_page_film_cinema = 1
+max_page_number_film_cinema = 14
+
 
 [Files]
 output_file = data.json
 ```
 
+
 Assurez-vous d'ajuster les valeurs en fonction de vos besoins :
+
 - `page_url` : Spécifiez l'URL des pages à parcourir.
-(Ne fonctionne que sur la page aucinema de Allocine pour l'instant)
-- `page_number` : Définissez le nombre de pages à parcourir sur la page au cinema.<br> (⚠️ La page_number est par defaut au maximum, ne dépasser pas le maximun ⚠️)
+(Ne fonctionne que sur la page au cinéma d'Allociné pour l'instant)
+- `start_page` : Définissez la page précise où le script va commencer à parcourir le site.<br>
+- `max_page` : Définissez la page où le script va s'arrêter
+(⚠️ La max_page est par défaut au maximum, ne dépassez pas le maximum ⚠️)
         
 Le fichier de configuration est prêt à être utilisé. Vous pouvez ajuster ces valeurs à tout moment en fonction de vos besoins spécifiques.
 
