@@ -537,9 +537,16 @@ def trier_series_films(data):
         json.dump(films_data, films_file, ensure_ascii=False, indent=4)
     with open('Tri/series-films/serie.json', 'w', encoding='utf-8') as series_file:
         json.dump(series_data, series_file, ensure_ascii=False, indent=4)
-def scrape_page(parser, url_template, max_page, page_type):
-    for i in range(1, max_page + 1):
+def scrape_page(parser, url_template, max_page, page_type, start_page):
+    try:
+        start_page = int(start_page)
+        max_page = int(max_page)
+    except ValueError:
+        print("Error: 'start_page' and 'max_page' must be integers.")
+        return
+    for i in range(start_page, max_page + 1):
         url = f"{url_template}{i}"
+        print(f"Scraping URL: {url}")
         soup = url_to_parse(url)
         if soup:
             if page_type == "cinema":
@@ -667,14 +674,203 @@ def main():
                 return
             elif command in ['meilleur', 'action', 'animation', 'aventure', 'biopic', 'comedie', 'comedie-dramatique', 'drame', 'epouvante-horreur', 'espionnage', 'famille', 'fantastique', 'historique', 'judiciaire', 'policier', 'romance', 'science-fiction', 'thriller']:
                 page_url = parser['Urls'][f'page_url_serie_{command}']
-                max_page = int(parser['Urls'][f'page_number_serie_{command}'])
+                start_page = int(parser['Urls'][f'start_page_serie_{command}'])
+                max_page = int(parser['Urls'][f'max_page_number_serie_{command}'])
                 scrape_page(parser, page_url, max_page, 'serie')
             elif command in ['cinema', 'action', 'animation', 'aventure', 'biopic', 'comedie', 'comedie-dramatique',
                              'drame', 'epouvante-horreur', 'famille', 'fantastique', 'guerre', 'historique',
                              'musical', 'policier', 'romance', 'science-fiction', 'thriller', 'western']:
                 page_url = parser['Urls'][f'page_url_{command}']
-                max_page = int(parser['Urls'][f'page_number_{command}'])
+                start_page = int(parser['Urls'][f'start_page_{command}'])
+                max_page = int(parser['Urls'][f'max_page_number_{command}'])
                 scrape_page(parser, page_url, max_page, 'action')
+            elif command == 'everyserie':
+                try:
+                    print("Executing everyserie command...")
+                    page_url = parser['Urls']['page_url_everyserie']
+                    try:
+                        start_page = int(
+                            parser['Urls']['start_page_everyserie'].strip())
+                    except ValueError:
+                        print(
+                            "Error: 'start_page_everyserie' in config.ini is not a valid integer.")
+                        sys.exit(1)
+                    max_page = int(
+                        parser['Urls']['max_page_number_everyserie'].strip())
+                    scrape_page(parser, page_url, max_page,
+                                'everyserie', start_page)
+                    with open('data.json', 'r', encoding='utf-8') as file:
+                        data = json.load(file)
+                    trier_series_films(data)
+                    print("Executing clean command...")
+                    clean_data()
+                except ValueError:
+                    print("Error: 'start_page' and 'max_page' must be integers.")
+                    return
+            elif command == 'everyfilm':
+                try:
+                    print("Executing everyfilm command...")
+                    page_url = parser['Urls']['page_url_everyfilm']
+                    start_page = int(parser['Urls']['start_page_everyfilm'])
+                    max_page = int(parser['Urls']['max_page_number_everyfilm'])
+                    scrape_page(parser, page_url, max_page,
+                                'everyfilm', start_page)
+                    print("Executing tri command...")
+                    with open('data.json', 'r', encoding='utf-8') as file:
+                        data = json.load(file)
+                    trier_series_films(data)
+                    print("Executing clean command...")
+                    clean_data()
+                except:
+                    print(
+                        "An error occured while executing everyfilm command. Please check your internet connection.")
+            elif command == 'everyall':
+                try:
+                    print("Executing everyfilm command...")
+                    page_url_everyfilm = parser['Urls']['page_url_everyfilm']
+                    start_page = int(parser['Urls']['start_page_everyfilm'])
+                    max_page_everyfilm = int(
+                        parser['Urls']['max_page_number_everyfilm'])
+                    scrape_page(parser, page_url_everyfilm,
+                                max_page_everyfilm, 'everyfilm', start_page)
+                    print("Executing everyserie command...")
+                    page_url_everyserie = parser['Urls']['page_url_everyserie']
+                    start_page = int(parser['Urls']['start_page_everyserie'])
+                    max_page_everyserie = int(
+                        parser['Urls']['max_page_number_everyserie'])
+                    scrape_page(parser, page_url_everyserie,
+                                max_page_everyserie, 'everyserie', start_page)
+                    with open('data.json', 'r', encoding='utf-8') as file:
+                        data = json.load(file)
+                    trier_series_films(data)
+                    print("Executing clean command...")
+                    clean_data()
+                except:
+                    print(
+                        "An error occurred while executing everyall command. Please check your internet connection.")
+            elif command == 'serie':
+                if len(sys.argv) > 2:
+                    genre_to_scrape = sys.argv[2].lower()
+                    if genre_to_scrape in ['meilleur', 'action', 'animation', 'aventure', 'biopic', 'comedie', 'comedie-dramatique',
+                                           'drame', 'epouvante-horreur', 'espionnage', 'famille', 'fantastique', 'historique',
+                                           'judiciaire', 'policier', 'romance', 'science-fiction', 'thriller']:
+                        page_url = parser['Urls'][f'page_url_serie_{
+                            genre_to_scrape}']
+                        start_page = int(
+                            parser['Urls'][f'start_page_serie_{genre_to_scrape}'])
+                        max_page = int(
+                            parser['Urls'][f'max_page_number_serie_{genre_to_scrape}'])
+                        scrape_page(parser, page_url, max_page,
+                                    'serie', start_page)
+                    else:
+                        print(f"Unknown genre. Use one of the following genres: {' '.join(
+                            ['action', 'animation', 'aventure', 'biopic', 'comedie', 'comedie-dramatique',
+                                'drame', 'epouvante-horreur', 'espionnage', 'famille', 'fantastique', 'historique',
+                                'judiciaire', 'policier', 'romance', 'science-fiction', 'thriller'])}.")
+                        return
+                else:
+                    print(f"Unknown genre. Use one of the following genres: {' '.join(
+                        ['action', 'animation', 'aventure', 'biopic', 'comedie', 'comedie-dramatique',
+                            'drame', 'epouvante-horreur', 'espionnage', 'famille', 'fantastique', 'historique',
+                            'judiciaire', 'policier', 'romance', 'science-fiction', 'thriller'])}.")
+                    return
+            elif command == 'serie-all':
+                genres_to_scrape = ['meilleur', 'action', 'animation', 'aventure', 'biopic', 'comedie', 'comedie-dramatique',
+                                    'drame', 'epouvante-horreur', 'espionnage', 'famille', 'fantastique', 'historique',
+                                    'judiciaire', 'policier', 'romance', 'science-fiction', 'thriller']
+                for genre in genres_to_scrape:
+                    page_url_key = f'page_url_serie_{genre}'
+                    start_page_key = f'start_page_serie_{genre}'
+                    max_page_key = f'max_page_number_serie_{genre}'
+                    if page_url_key in parser['Urls'] and max_page_key in parser['Urls']:
+                        page_url = parser['Urls'][page_url_key]
+                        start_page = int(parser['Urls'][start_page_key])
+                        max_page = int(parser['Urls'][max_page_key])
+                        scrape_page(parser, page_url, max_page,
+                                    'serie', start_page)
+                    else:
+                        pass
+            elif command == 'film-all':
+                genres_to_scrape = ['action', 'animation', 'aventure', 'biopic', 'comedie', 'comedie-dramatique',
+                                    'drame', 'epouvante-horreur', 'famille', 'fantastique', 'guerre', 'historique',
+                                    'musical', 'policier', 'romance', 'science-fiction', 'thriller', 'western']
+                for genre in genres_to_scrape:
+                    page_url_key = f'page_url_film_{genre}'
+                    start_page_key = f'start_page_film_{genre}'
+                    max_page_key = f'max_page_number_film_{genre}'
+                    if page_url_key in parser['Urls'] and max_page_key in parser['Urls']:
+                        page_url = parser['Urls'][page_url_key]
+                        start_page = int(parser['Urls'][start_page_key])
+                        max_page = int(parser['Urls'][max_page_key])
+                        scrape_page(parser, page_url, max_page,
+                                    'action', start_page)
+                    else:
+                        pass
+            elif command == 'all':
+                try:
+                    print("Executing film-all command...")
+                    genres_to_scrape_film = ['action', 'animation', 'aventure', 'biopic', 'comedie', 'comedie-dramatique',
+                                            'drame', 'epouvante-horreur', 'famille', 'fantastique', 'guerre', 'historique',
+                                            'musical', 'policier', 'romance', 'science-fiction', 'thriller', 'western']
+                    for genre in genres_to_scrape_film:
+                        page_url_key_film = f'page_url_film_{genre}'
+                        start_page_key_film = f'start_page_film_{genre}'
+                        max_page_key_film = f'max_page_number_film_{genre}'
+                        if page_url_key_film in parser['Urls'] and max_page_key_film in parser['Urls']:
+                            page_url_film = parser['Urls'][page_url_key_film]
+                            start_page_film = int(parser['Urls'][start_page_key_film])
+                            max_page_film = int(parser['Urls'][max_page_key_film])
+                            scrape_page(parser, page_url_film, max_page_film, 'action', start_page_film)
+                        else:
+                            pass
+                    print("Executing serie-all command...")
+                    genres_to_scrape_serie = ['meilleur', 'action', 'animation', 'aventure', 'biopic', 'comedie', 'comedie-dramatique',
+                                            'drame', 'epouvante-horreur', 'espionnage', 'famille', 'fantastique', 'historique',
+                                            'judiciaire', 'policier', 'romance', 'science-fiction', 'thriller']
+                    for genre in genres_to_scrape_serie:
+                        page_url_key_serie = f'page_url_serie_{genre}'
+                        start_page_key_serie = f'start_page_serie_{genre}'
+                        max_page_key_serie = f'max_page_number_serie_{genre}'
+                        if page_url_key_serie in parser['Urls'] and max_page_key_serie in parser['Urls']:
+                            page_url_serie = parser['Urls'][page_url_key_serie]
+                            start_page_serie = int(parser['Urls'][start_page_key_serie])
+                            max_page_serie = int(parser['Urls'][max_page_key_serie])
+                            scrape_page(parser, page_url_serie, max_page_serie, 'serie', start_page_serie)
+                        else:
+                            pass
+                    print("Executing tri command...")
+                    with open('data.json', 'r', encoding='utf-8') as file:
+                        data = json.load(file)
+                    trier_series_films(data)
+                    print("Executing clean command...")
+                    clean_data()
+                except Exception as e:
+                    print(f"An error occurred: {e}")
+            elif command == 'film':
+                if len(sys.argv) > 2:
+                    genre_to_scrape = sys.argv[2].lower()
+                    if genre_to_scrape in ['action', 'animation', 'aventure', 'biopic', 'comedie', 'comedie-dramatique',
+                                           'drame', 'epouvante-horreur', 'famille', 'fantastique', 'guerre', 'historique',
+                                           'musical', 'policier', 'romance', 'science-fiction', 'thriller', 'western']:
+                        page_url = parser['Urls'][f'page_url_film_{
+                            genre_to_scrape}']
+                        start_page = int(
+                            parser['Urls'][f'start_page_film_{genre_to_scrape}'])
+                        max_page = int(
+                            parser['Urls'][f'max_page_number_film_{genre_to_scrape}'])
+                        scrape_page(parser, page_url, max_page,
+                                    'action', start_page)
+                    else:
+                        print(f"Unknown genre. Use one of the following genres: {' '.join(
+                            ['action', 'animation', 'aventure', 'biopic', 'comedie', 'comedie-dramatique', 'drame', 'epouvante-horreur', 'famille', 'fantastique', 'guerre', 'historique',              'musical', 'policier', 'romance', 'science-fiction', 'thriller', 'western'])}.")
+                        return
+                else:
+                    print(f"Unknown genre. Use one of the following genres: {' '.join(
+                        ['action', 'animation', 'aventure', 'biopic', 'comedie', 'comedie-dramatique', 'drame', 'epouvante-horreur', 'famille', 'fantastique', 'guerre', 'historique', 'musical',               'policier', 'romance', 'science-fiction', 'thriller', 'western'])}.")
+                    return
+            elif command == 'interface':
+                afficher_interface()
+                return
             elif command == 'help':
                 print("List of commands:")
                 print("- clean: Clean data.json and the Covers folder.")
@@ -712,165 +908,6 @@ def main():
                 print("- science-fiction: Scrape science-fiction pages.")
                 print("- thriller: Scrape thriller pages.")
                 print("- western: Scrape western pages.")
-                return
-            elif command == 'everyserie':
-                try:
-                    print("Executing everyserie command...")
-                    page_url = parser['Urls']['page_url_everyserie']
-                    max_page = int(parser['Urls']['page_number_everyserie'])
-                    scrape_page(parser, page_url, max_page, 'everyserie')
-                    print("Executing tri command...")
-                    with open('data.json', 'r', encoding='utf-8') as file:
-                        data = json.load(file)
-                    trier_series_films(data)
-                    print("Executing clean command...")
-                    clean_data()
-                except:
-                    print(
-                        "An error occured while executing everyserie command. Please check your internet connection.")
-            elif command == 'everyfilm':
-                try:
-                    print("Executing everyfilm command...")
-                    page_url = parser['Urls']['page_url_everyfilm']
-                    max_page = int(parser['Urls']['page_number_everyfilm'])
-                    scrape_page(parser, page_url, max_page, 'everyfilm')
-                    print("Executing tri command...")
-                    with open('data.json', 'r', encoding='utf-8') as file:
-                        data = json.load(file)
-                    trier_series_films(data)
-                    print("Executing clean command...")
-                    clean_data()
-                except:
-                    print(
-                        "An error occured while executing everyfilm command. Please check your internet connection.")
-            elif command == 'everyall':
-                try:
-                    print("Executing everyfilm command...")
-                    page_url_everyfilm = parser['Urls']['page_url_everyfilm']
-                    max_page_everyfilm = int(
-                        parser['Urls']['page_number_everyfilm'])
-                    scrape_page(parser, page_url_everyfilm,
-                                max_page_everyfilm, 'everyaction')
-                    print("Executing everyserie command...")
-                    page_url_everyserie = parser['Urls']['page_url_everyserie']
-                    max_page_everyserie = int(
-                        parser['Urls']['page_number_everyserie'])
-                    scrape_page(parser, page_url_everyserie,
-                                max_page_everyserie, 'everyserie')
-                    with open('data.json', 'r', encoding='utf-8') as file:
-                        data = json.load(file)
-                    trier_series_films(data)
-                    print("Executing clean command...")
-                    clean_data()
-                except:
-                    print(
-                        "An error occurred while executing everyall command. Please check your internet connection.")
-            elif command == 'serie':
-                if len(sys.argv) > 2:
-                    genre_to_scrape = sys.argv[2].lower()
-                    if genre_to_scrape in ['meilleur', 'action', 'animation', 'aventure', 'biopic', 'comedie', 'comedie-dramatique',
-                                           'drame', 'epouvante-horreur', 'espionnage', 'famille', 'fantastique', 'historique',
-                                           'judiciaire', 'policier', 'romance', 'science-fiction', 'thriller']:
-                        page_url = parser['Urls'][f'page_url_serie_{
-                            genre_to_scrape}']
-                        max_page = int(
-                            parser['Urls'][f'page_number_serie_{genre_to_scrape}'])
-                        scrape_page(parser, page_url, max_page, 'serie')
-                    else:
-                        print(f"Unknown genre. Use one of the following genres: {' '.join(
-                            ['action', 'animation', 'aventure', 'biopic', 'comedie', 'comedie-dramatique',
-                             'drame', 'epouvante-horreur', 'espionnage', 'famille', 'fantastique', 'historique',
-                             'judiciaire', 'policier', 'romance', 'science-fiction', 'thriller'])}.")
-                        return
-                else:
-                    print(f"Unknown genre. Use one of the following genres: {' '.join(
-                        ['action', 'animation', 'aventure', 'biopic', 'comedie', 'comedie-dramatique',
-                         'drame', 'epouvante-horreur', 'espionnage', 'famille', 'fantastique', 'historique',
-                         'judiciaire', 'policier', 'romance', 'science-fiction', 'thriller'])}.")
-                    return
-            elif command == 'serie-all':
-                genres_to_scrape = ['meilleur', 'action', 'animation', 'aventure', 'biopic', 'comedie', 'comedie-dramatique',
-                                    'drame', 'epouvante-horreur', 'espionnage', 'famille', 'fantastique', 'historique',
-                                    'judiciaire', 'policier', 'romance', 'science-fiction', 'thriller']
-                for genre in genres_to_scrape:
-                    page_url_key = f'page_url_serie_{genre}'
-                    max_page_key = f'page_number_serie_{genre}'
-                    if page_url_key in parser['Urls'] and max_page_key in parser['Urls']:
-                        page_url = parser['Urls'][page_url_key]
-                        max_page = int(parser['Urls'][max_page_key])
-                        scrape_page(parser, page_url, max_page, 'serie')
-                    else:
-                        pass
-            elif command == 'film-all':
-                genres_to_scrape = ['action', 'animation', 'aventure', 'biopic', 'comedie', 'comedie-dramatique',
-                                    'drame', 'epouvante-horreur', 'famille', 'fantastique', 'guerre', 'historique',
-                                    'musical', 'policier', 'romance', 'science-fiction', 'thriller', 'western']
-                for genre in genres_to_scrape:
-                    page_url_key = f'page_url_film_{genre}'
-                    max_page_key = f'page_number_film_{genre}'
-                    if page_url_key in parser['Urls'] and max_page_key in parser['Urls']:
-                        page_url = parser['Urls'][page_url_key]
-                        max_page = int(parser['Urls'][max_page_key])
-                        scrape_page(parser, page_url, max_page, 'action')
-                    else:
-                        pass
-            elif command == 'all':
-                try:
-                    print("Executing film-all command...")
-                    genres_to_scrape_film = ['action', 'animation', 'aventure',           'biopic', 'comedie', 'comedie-dramatique',
-                                             'drame', 'epouvante-horreur', 'famille', 'fantastique', 'guerre', 'historique',
-                                             'musical', 'policier', 'romance', 'science-fiction', 'thriller', 'western']
-                    for genre in genres_to_scrape_film:
-                        page_url_key_film = f'page_url_film_{genre}'
-                        max_page_key_film = f'page_number_film_{genre}'
-                        if page_url_key_film in parser['Urls'] and max_page_key_film in parser['Urls']:
-                            page_url_film = parser['Urls'][page_url_key_film]
-                            max_page_film = int(
-                                parser['Urls'][max_page_key_film])
-                            scrape_page(parser, page_url_film,
-                                        max_page_film, 'action')
-                        else:
-                            pass
-                    print("Executing serie-all command...")
-                    genres_to_scrape_serie = ['meilleur', 'action', 'animation', 'aventure', 'biopic', 'comedie', 'comedie-dramatique',
-                                              'drame', 'epouvante-horreur', 'espionnage', 'famille', 'fantastique', 'historique',
-                                              'judiciaire', 'policier', 'romance', 'science-fiction', 'thriller']
-                    for genre in genres_to_scrape_serie:
-                        page_url_key_serie = f'page_url_serie_{genre}'
-                        max_page_key_serie = f'page_number_serie_{genre}'
-                        if page_url_key_serie in parser['Urls'] and max_page_key_serie in parser['Urls']:
-                            page_url_serie = parser['Urls'][page_url_key_serie]
-                            max_page_serie = int(
-                                parser['Urls'][max_page_key_serie])
-                            scrape_page(parser, page_url_serie,
-                                        max_page_serie, 'serie')
-                        else:
-                            pass
-                    print("Executing tri command...")
-                    with open('data.json', 'r', encoding='utf-8') as file:
-                        data = json.load(file)
-                    trier_series_films(data)
-                    print("Executing clean command...")
-                    clean_data()
-                except Exception as e:
-                    print(f"An error occurred: {e}")
-            elif command == 'film':
-                if len(sys.argv) > 2:
-                    genre_to_scrape = sys.argv[2].lower()
-                    if genre_to_scrape in ['action', 'animation', 'aventure', 'biopic', 'comedie', 'comedie-dramatique',
-                                           'drame', 'epouvante-horreur', 'famille', 'fantastique', 'guerre', 'historique',
-                                           'musical', 'policier', 'romance', 'science-fiction', 'thriller', 'western']:
-                        page_url = parser['Urls'][f'page_url_film_{
-                            genre_to_scrape}']
-                        max_page = int(
-                            parser['Urls'][f'page_number_film_{genre_to_scrape}'])
-                        scrape_page(parser, page_url, max_page, 'action')
-                    else:
-                        print(f"Unknown genre. Use one of the following genres: {' '.join(
-                            ['action', 'animation', 'aventure', 'biopic', 'comedie', 'comedie-dramatique', 'drame', 'epouvante-horreur', 'famille', 'fantastique', 'guerre', 'historique', 'musical', 'policier', 'romance', 'science-fiction', 'thriller', 'western'])}.")
-                        return
-            elif command == 'interface':
-                afficher_interface()
                 return
             else:
                 print(f"Unknown command: {command}.")
