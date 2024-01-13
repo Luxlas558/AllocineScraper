@@ -20,6 +20,8 @@ import tkinter as tk
 from tkinter import filedialog
 from tkinter import ttk
 import subprocess
+
+
 def download_and_extract_chromedriver():
     if not os.path.isfile("chromedriver.exe"):
         print("Téléchargement du pilote ChromeDriver...")
@@ -32,6 +34,8 @@ def download_and_extract_chromedriver():
         print("Pilote ChromeDriver téléchargé et extrait.")
     else:
         print("")
+
+
 def scroll_to_bottom(driver):
     current_height = driver.execute_script(
         "return Math.max( document.body.scrollHeight, document.body.offsetHeight, document.documentElement.clientHeight, document.documentElement.scrollHeight, document.documentElement.offsetHeight );")
@@ -40,9 +44,13 @@ def scroll_to_bottom(driver):
         time.sleep(0.1)
     driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
     time.sleep(1)
+
+
 def clean_title_from_date(title):
     cleaned_title = re.sub(r'\([^)]*\)', '', title).strip()
     return cleaned_title
+
+
 def download_and_save_image(url, title):
     clean_title = re.sub(r'\W+', '', title)
     base_image_path = os.path.join("Covers", f"{clean_title}.jpg")
@@ -65,6 +73,8 @@ def download_and_save_image(url, title):
     else:
         print(f"Échec du téléchargement de l'image pour {
               title}. Code de statut : {response.status_code}")
+
+
 def url_to_parse(url="") -> BeautifulSoup:
     driver = None
     try:
@@ -83,6 +93,8 @@ def url_to_parse(url="") -> BeautifulSoup:
     finally:
         if driver:
             driver.quit()
+
+
 def parse_to_data(soup_list=[], page_type="") -> dict:
     film_number = 0
     films_dico = {"data_number": film_number, "data": []}
@@ -260,108 +272,158 @@ def parse_to_data(soup_list=[], page_type="") -> dict:
                 except Exception as e:
                     pass
     elif page_type == "everyfilm":
-      for soup in soup_list:
-       films_container = soup.find_all("li", {"class": "mdl"})
-      for film_container in films_container:
-       if film_container is not None:
-           try:
-               film_data = {"type": "film"}
-               title_element = film_container.find("h2", {"class": "meta-title"})
-               film_data["title"] = clean_title_from_date(title_element.text.strip())
-               actors_element = film_container.find("div", {"class": "meta-body-item meta-body-actor"})
-               actors = [actor.text.strip() for actor in actors_element.find_all("a")] if actors_element else []
-               film_data["actors"] = actors
-               director_element = film_container.find("div", {"class": "meta-body-item meta-body-direction"}).find("a")
-               film_data["director"] = director_element.text.strip() if director_element else None
-               info_element = film_container.find("div", {"class": "meta-body-item meta-body-info"})
-               release_date_element = info_element.find("span", {"class": "date"})
-               film_data["release_date"] = release_date_element.text.strip() if release_date_element else None
-               img_url_element = film_container.find("img", {"class": "thumbnail-img"})
-               img_url = img_url_element["src"] if img_url_element else None
-               download_and_save_image(img_url, film_data["title"]) if img_url else None
-               if info_element:
-                  date_duration_genres = info_element.get_text(strip=True).split('/')
-                  film_data["release_date"] = date_duration_genres[0].strip()
-                  film_data["length"] = date_duration_genres[1].strip() if len(date_duration_genres) > 1 else None
-                  genres_str = date_duration_genres[2] if len(date_duration_genres) > 2 else ""
-                  genres = [genre.strip() for genre in genres_str.split(',')] if genres_str else []
-                  film_data["genres"] = genres
-               else:
-                  film_data["release_date"] = None
-                  film_data["length"] = None
-                  film_data["genres"] = None                              
-               critics_rating_element = film_container.find("span", {"class": "stareval-note"})
-               critics_rating = float(critics_rating_element.text.replace(",", ".")) if critics_rating_element else None
-               audience_rating_element = film_container.find("div", {"class": "rating-item"}).find("span", {"class": "stareval-note"})
-               audience_rating = float(audience_rating_element.text.replace(",", ".")) if audience_rating_element else None
-               film_data["rating"] = {
-                  "critics": critics_rating,
-                  "audience": audience_rating
-               }
-               synopsis_element = film_container.find("div", {"class": "synopsis"})
-               film_data["synopsis"] = synopsis_element.find("div", {"class": "content-txt"}).text.strip() if synopsis_element and synopsis_element.find("div", {"class": "content-txt"}) else None
-               clean_title = re.sub(r'\W+', '', film_data["title"]) if film_data["title"] else None
-               film_data["image"] = os.path.join("Covers", f"{clean_title}.jpg").replace("\\", "/") if clean_title else None
-               film_number += 1
-               films_dico["data"].append(film_data)
-           except Exception as e:
-               pass
+        for soup in soup_list:
+            films_container = soup.find_all("li", {"class": "mdl"})
+        for film_container in films_container:
+            if film_container is not None:
+                try:
+                    film_data = {"type": "film"}
+                    title_element = film_container.find(
+                        "h2", {"class": "meta-title"})
+                    film_data["title"] = clean_title_from_date(
+                        title_element.text.strip())
+                    actors_element = film_container.find(
+                        "div", {"class": "meta-body-item meta-body-actor"})
+                    actors = [actor.text.strip() for actor in actors_element.find_all(
+                        "a")] if actors_element else []
+                    film_data["actors"] = actors
+                    director_element = film_container.find(
+                        "div", {"class": "meta-body-item meta-body-direction"}).find("a")
+                    film_data["director"] = director_element.text.strip(
+                    ) if director_element else None
+                    info_element = film_container.find(
+                        "div", {"class": "meta-body-item meta-body-info"})
+                    release_date_element = info_element.find(
+                        "span", {"class": "date"})
+                    film_data["release_date"] = release_date_element.text.strip(
+                    ) if release_date_element else None
+                    img_url_element = film_container.find(
+                        "img", {"class": "thumbnail-img"})
+                    img_url = img_url_element["src"] if img_url_element else None
+                    download_and_save_image(
+                        img_url, film_data["title"]) if img_url else None
+                    if info_element:
+                        date_duration_genres = info_element.get_text(
+                            strip=True).split('/')
+                        film_data["release_date"] = date_duration_genres[0].strip()
+                        film_data["length"] = date_duration_genres[1].strip() if len(
+                            date_duration_genres) > 1 else None
+                        genres_str = date_duration_genres[2] if len(
+                            date_duration_genres) > 2 else ""
+                        genres = [genre.strip() for genre in genres_str.split(
+                            ',')] if genres_str else []
+                        film_data["genres"] = genres
+                    else:
+                        film_data["release_date"] = None
+                        film_data["length"] = None
+                        film_data["genres"] = None
+                    critics_rating_element = film_container.find(
+                        "span", {"class": "stareval-note"})
+                    critics_rating = float(critics_rating_element.text.replace(
+                        ",", ".")) if critics_rating_element else None
+                    audience_rating_element = film_container.find(
+                        "div", {"class": "rating-item"}).find("span", {"class": "stareval-note"})
+                    audience_rating = float(audience_rating_element.text.replace(
+                        ",", ".")) if audience_rating_element else None
+                    film_data["rating"] = {
+                        "critics": critics_rating,
+                        "audience": audience_rating
+                    }
+                    synopsis_element = film_container.find(
+                        "div", {"class": "synopsis"})
+                    film_data["synopsis"] = synopsis_element.find("div", {"class": "content-txt"}).text.strip(
+                    ) if synopsis_element and synopsis_element.find("div", {"class": "content-txt"}) else None
+                    clean_title = re.sub(
+                        r'\W+', '', film_data["title"]) if film_data["title"] else None
+                    film_data["image"] = os.path.join("Covers", f"{clean_title}.jpg").replace(
+                        "\\", "/") if clean_title else None
+                    film_number += 1
+                    films_dico["data"].append(film_data)
+                except Exception as e:
+                    pass
     elif page_type == "everyserie":
-      for soup in soup_list:
-       films_container = soup.find_all("li", {"class": "mdl"})
-      for film_container in films_container:
-       if film_container is not None:
-           try:
-               film_data = {"type": "film"}
-               title_element = film_container.find("h2", {"class": "meta-title"})
-               film_data["title"] = clean_title_from_date(title_element.text.strip())
-               actors_element = film_container.find("div", {"class": "meta-body-item meta-body-actor"})
-               actors = [actor.text.strip() for actor in actors_element.find_all("a")] if actors_element else []
-               film_data["actors"] = actors
-               director_element = film_container.find("div", {"class": "meta-body-item meta-body-direction"}).find("a")
-               film_data["director"] = director_element.text.strip() if director_element else None
-               info_element = film_container.find("div", {"class": "meta-body-item meta-body-info"})
-               release_date_element = info_element.find("span", {"class": "date"})
-               film_data["release_date"] = release_date_element.text.strip() if release_date_element else None
-               img_url_element = film_container.find("img", {"class": "thumbnail-img"})
-               img_url = img_url_element["src"] if img_url_element else None
-               download_and_save_image(img_url, film_data["title"]) if img_url else None
-               if info_element:
-                  date_duration_genres = info_element.get_text(strip=True).split('/')
-                  film_data["release_date"] = date_duration_genres[0].strip()
-                  film_data["length"] = date_duration_genres[1].strip() if len(date_duration_genres) > 1 else None
-                  genres_str = date_duration_genres[2] if len(date_duration_genres) > 2 else ""
-                  genres = [genre.strip() for genre in genres_str.split(',')] if genres_str else []
-                  film_data["genres"] = genres
-               else:
-                  film_data["release_date"] = None
-                  film_data["length"] = None
-                  film_data["genres"] = None                              
-               critics_rating_element = film_container.find("span", {"class": "stareval-note"})
-               critics_rating = float(critics_rating_element.text.replace(",", ".")) if critics_rating_element else None
-               audience_rating_element = film_container.find("div", {"class": "rating-item"}).find("span", {"class": "stareval-note"})
-               audience_rating = float(audience_rating_element.text.replace(",", ".")) if audience_rating_element else None
-               film_data["rating"] = {
-                  "critics": critics_rating,
-                  "audience": audience_rating
-               }
-               synopsis_element = film_container.find("div", {"class": "synopsis"})
-               film_data["synopsis"] = synopsis_element.find("div", {"class": "content-txt"}).text.strip() if synopsis_element and synopsis_element.find("div", {"class": "content-txt"}) else None
-               clean_title = re.sub(r'\W+', '', film_data["title"]) if film_data["title"] else None
-               film_data["image"] = os.path.join("Covers", f"{clean_title}.jpg").replace("\\", "/") if clean_title else None
-               film_number += 1
-               films_dico["data"].append(film_data)
-           except Exception as e:
-               pass
+        for soup in soup_list:
+            films_container = soup.find_all("li", {"class": "mdl"})
+        for film_container in films_container:
+            if film_container is not None:
+                try:
+                    film_data = {"type": "serie"}
+                    title_element = film_container.find(
+                        "h2", {"class": "meta-title"})
+                    film_data["title"] = clean_title_from_date(
+                        title_element.text.strip())
+                    actors_element = film_container.find(
+                        "div", {"class": "meta-body-item meta-body-actor"})
+                    actors = [actor.text.strip() for actor in actors_element.find_all(
+                        "a")] if actors_element else []
+                    film_data["actors"] = actors
+                    director_element = film_container.find(
+                        "div", {"class": "meta-body-item meta-body-direction"}).find("a")
+                    film_data["director"] = director_element.text.strip(
+                    ) if director_element else None
+                    info_element = film_container.find(
+                        "div", {"class": "meta-body-item meta-body-info"})
+                    release_date_element = info_element.find(
+                        "span", {"class": "date"})
+                    film_data["release_date"] = release_date_element.text.strip(
+                    ) if release_date_element else None
+                    img_url_element = film_container.find(
+                        "img", {"class": "thumbnail-img"})
+                    img_url = img_url_element["src"] if img_url_element else None
+                    download_and_save_image(
+                        img_url, film_data["title"]) if img_url else None
+                    if info_element:
+                        date_duration_genres = info_element.get_text(
+                            strip=True).split('/')
+                        film_data["release_date"] = date_duration_genres[0].strip()
+                        film_data["length"] = date_duration_genres[1].strip() if len(
+                            date_duration_genres) > 1 else None
+                        genres_str = date_duration_genres[2] if len(
+                            date_duration_genres) > 2 else ""
+                        genres = [genre.strip() for genre in genres_str.split(
+                            ',')] if genres_str else []
+                        film_data["genres"] = genres
+                    else:
+                        film_data["release_date"] = None
+                        film_data["length"] = None
+                        film_data["genres"] = None
+                    critics_rating_element = film_container.find(
+                        "span", {"class": "stareval-note"})
+                    critics_rating = float(critics_rating_element.text.replace(
+                        ",", ".")) if critics_rating_element else None
+                    audience_rating_element = film_container.find(
+                        "div", {"class": "rating-item"}).find("span", {"class": "stareval-note"})
+                    audience_rating = float(audience_rating_element.text.replace(
+                        ",", ".")) if audience_rating_element else None
+                    film_data["rating"] = {
+                        "critics": critics_rating,
+                        "audience": audience_rating
+                    }
+                    synopsis_element = film_container.find(
+                        "div", {"class": "synopsis"})
+                    film_data["synopsis"] = synopsis_element.find("div", {"class": "content-txt"}).text.strip(
+                    ) if synopsis_element and synopsis_element.find("div", {"class": "content-txt"}) else None
+                    clean_title = re.sub(
+                        r'\W+', '', film_data["title"]) if film_data["title"] else None
+                    film_data["image"] = os.path.join("Covers", f"{clean_title}.jpg").replace(
+                        "\\", "/") if clean_title else None
+                    film_number += 1
+                    films_dico["data"].append(film_data)
+                except Exception as e:
+                    pass
     else:
         print(f"Final Titles: {[film['title']
               for film in films_dico['data']]}")
         print(f"Unknown page type: {page_type}.")
     films_dico["data_number"] = film_number
     return films_dico
+
+
 def data_to_json(data=None, filename="data.json") -> None:
     with open(filename, 'w', encoding='utf8') as json_file:
         json.dump(data, json_file, ensure_ascii=False, indent=4)
+
+
 def data_to_csv(data: dict = None, filename="data.csv") -> None:
     data_frame = {
         "title": [film["title"] for film in data["data"]],
@@ -377,6 +439,8 @@ def data_to_csv(data: dict = None, filename="data.csv") -> None:
     }
     data_frame = pd.DataFrame.from_dict(data_frame)
     data_frame.to_csv(filename, index=False, header=True, encoding='utf-8')
+
+
 def load_existing_data(filename="data.json") -> dict:
     if os.path.isfile(filename) and os.path.getsize(filename) > 0:
         with open(filename, 'r', encoding='utf8') as json_file:
@@ -387,6 +451,8 @@ def load_existing_data(filename="data.json") -> dict:
             json.dump(default_data, json_file, indent=4)
         existing_data = default_data
     return existing_data
+
+
 def update_existing_data(existing_data: dict, new_films: list) -> dict:
     new_films = [new_film for new_film in new_films if new_film['synopsis'] not in [
         film['synopsis'] for film in existing_data['data']]]
@@ -397,6 +463,8 @@ def update_existing_data(existing_data: dict, new_films: list) -> dict:
     existing_data['data'].extend(new_films)
     existing_data['data_number'] = len(existing_data['data'])
     return existing_data
+
+
 def clean_data():
     try:
         if os.path.exists("data.json"):
@@ -407,6 +475,8 @@ def clean_data():
             print("Dossier Covers supprimé avec succès.")
     except Exception as e:
         pass
+
+
 def clean_alldata():
     try:
         if os.path.exists("data.json"):
@@ -426,6 +496,8 @@ def clean_alldata():
             pass
     except Exception as e:
         pass
+
+
 def trier_series_films(data):
     initial_covers_directory = 'Covers'
     series_data = {"data_number": 0, "data": []}
@@ -491,6 +563,8 @@ def trier_series_films(data):
         json.dump(films_data, films_file, ensure_ascii=False, indent=4)
     with open('Tri/series-films/serie.json', 'w', encoding='utf-8') as series_file:
         json.dump(series_data, series_file, ensure_ascii=False, indent=4)
+
+
 def scrape_page(parser, url_template, max_page, page_type):
     for i in range(1, max_page + 1):
         url = f"{url_template}{i}"
@@ -517,6 +591,8 @@ def scrape_page(parser, url_template, max_page, page_type):
                 data_to_json(updated_data, output_file)
             else:
                 data_to_json(updated_data, output_file)
+
+
 def afficher_interface():
     def lancer_scraper():
         site = site_var.get()
@@ -528,22 +604,27 @@ def afficher_interface():
             commande = f"python scraper.py {type_media} {genre} --tri"
         subprocess.run(commande, shell=True)
         root.update_idletasks()
+
     def lancer_all():
         commande = "python scraper.py all"
         subprocess.run(commande, shell=True)
         root.update_idletasks()
+
     def lancer_everyall():
         commande = "python scraper.py everyall"
         subprocess.run(commande, shell=True)
         root.update_idletasks()
+
     def lancer_tri():
         commande = "python scraper.py tri"
         subprocess.run(commande, shell=True)
         root.update_idletasks()
+
     def lancer_clean():
         commande = "python scraper.py clean"
         subprocess.run(commande, shell=True)
         root.update_idletasks()
+
     def update_genres(*args):
         selected_type_media = type_media_var.get()
         new_genres = genres_film if selected_type_media == 'Film' else genres_serie
@@ -599,6 +680,8 @@ def afficher_interface():
         frame.grid_columnconfigure(0, weight=1)
         frame.grid_columnconfigure(1, weight=1)
     root.mainloop()
+
+
 def main():
     parser = ConfigParser()
     parser.read("config.ini")
@@ -831,6 +914,8 @@ def main():
                 return
     except Exception as e:
         pass
+
+
 if __name__ == "__main__":
     main()
     if len(sys.argv) > 1 and sys.argv[1].lower() == 'tri':
