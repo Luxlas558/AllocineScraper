@@ -21,7 +21,6 @@ from tkinter import filedialog
 from tkinter import ttk
 import subprocess
 
-
 def download_and_extract_chromedriver():
     if not os.path.isfile("chromedriver.exe"):
         print("Téléchargement du pilote ChromeDriver...")
@@ -256,7 +255,7 @@ def parse_to_data(soup_list=[], page_type="") -> dict:
 
                     except Exception as e:
                         pass
-
+                    
     elif page_type == "serie":
         for soup in soup_list:
             films_container = soup.find_all("li", {"class": "mdl"})
@@ -328,6 +327,130 @@ def parse_to_data(soup_list=[], page_type="") -> dict:
 
                 except Exception as e:
                     pass
+
+    elif page_type == "everyfilm":
+      for soup in soup_list:
+       films_container = soup.find_all("li", {"class": "mdl"})
+
+      for film_container in films_container:
+       if film_container is not None:
+           try:
+               film_data = {"type": "film"}
+               title_element = film_container.find("h2", {"class": "meta-title"})
+               film_data["title"] = clean_title_from_date(title_element.text.strip())
+
+               actors_element = film_container.find("div", {"class": "meta-body-item meta-body-actor"})
+               actors = [actor.text.strip() for actor in actors_element.find_all("a")] if actors_element else []
+               film_data["actors"] = actors
+
+               director_element = film_container.find("div", {"class": "meta-body-item meta-body-direction"}).find("a")
+               film_data["director"] = director_element.text.strip() if director_element else None
+
+               info_element = film_container.find("div", {"class": "meta-body-item meta-body-info"})
+
+               release_date_element = info_element.find("span", {"class": "date"})
+               film_data["release_date"] = release_date_element.text.strip() if release_date_element else None
+
+               img_url_element = film_container.find("img", {"class": "thumbnail-img"})
+               img_url = img_url_element["src"] if img_url_element else None
+               download_and_save_image(img_url, film_data["title"]) if img_url else None
+
+               if info_element:
+                  date_duration_genres = info_element.get_text(strip=True).split('/')
+                  film_data["release_date"] = date_duration_genres[0].strip()
+                  film_data["length"] = date_duration_genres[1].strip() if len(date_duration_genres) > 1 else None
+                  genres_str = date_duration_genres[2] if len(date_duration_genres) > 2 else ""
+                  genres = [genre.strip() for genre in genres_str.split(',')] if genres_str else []
+                  film_data["genres"] = genres
+               else:
+                  film_data["release_date"] = None
+                  film_data["length"] = None
+                  film_data["genres"] = None                              
+
+               critics_rating_element = film_container.find("span", {"class": "stareval-note"})
+               critics_rating = float(critics_rating_element.text.replace(",", ".")) if critics_rating_element else None
+
+               audience_rating_element = film_container.find("div", {"class": "rating-item"}).find("span", {"class": "stareval-note"})
+               audience_rating = float(audience_rating_element.text.replace(",", ".")) if audience_rating_element else None
+
+               film_data["rating"] = {
+                  "critics": critics_rating,
+                  "audience": audience_rating
+               }
+
+               synopsis_element = film_container.find("div", {"class": "synopsis"})
+               film_data["synopsis"] = synopsis_element.find("div", {"class": "content-txt"}).text.strip() if synopsis_element and synopsis_element.find("div", {"class": "content-txt"}) else None
+
+               clean_title = re.sub(r'\W+', '', film_data["title"]) if film_data["title"] else None
+               film_data["image"] = os.path.join("Covers", f"{clean_title}.jpg").replace("\\", "/") if clean_title else None
+
+               film_number += 1
+               films_dico["data"].append(film_data)
+
+           except Exception as e:
+               pass
+           
+    elif page_type == "everyserie":
+      for soup in soup_list:
+       films_container = soup.find_all("li", {"class": "mdl"})
+
+      for film_container in films_container:
+       if film_container is not None:
+           try:
+               film_data = {"type": "film"}
+               title_element = film_container.find("h2", {"class": "meta-title"})
+               film_data["title"] = clean_title_from_date(title_element.text.strip())
+
+               actors_element = film_container.find("div", {"class": "meta-body-item meta-body-actor"})
+               actors = [actor.text.strip() for actor in actors_element.find_all("a")] if actors_element else []
+               film_data["actors"] = actors
+
+               director_element = film_container.find("div", {"class": "meta-body-item meta-body-direction"}).find("a")
+               film_data["director"] = director_element.text.strip() if director_element else None
+
+               info_element = film_container.find("div", {"class": "meta-body-item meta-body-info"})
+
+               release_date_element = info_element.find("span", {"class": "date"})
+               film_data["release_date"] = release_date_element.text.strip() if release_date_element else None
+
+               img_url_element = film_container.find("img", {"class": "thumbnail-img"})
+               img_url = img_url_element["src"] if img_url_element else None
+               download_and_save_image(img_url, film_data["title"]) if img_url else None
+
+               if info_element:
+                  date_duration_genres = info_element.get_text(strip=True).split('/')
+                  film_data["release_date"] = date_duration_genres[0].strip()
+                  film_data["length"] = date_duration_genres[1].strip() if len(date_duration_genres) > 1 else None
+                  genres_str = date_duration_genres[2] if len(date_duration_genres) > 2 else ""
+                  genres = [genre.strip() for genre in genres_str.split(',')] if genres_str else []
+                  film_data["genres"] = genres
+               else:
+                  film_data["release_date"] = None
+                  film_data["length"] = None
+                  film_data["genres"] = None                              
+
+               critics_rating_element = film_container.find("span", {"class": "stareval-note"})
+               critics_rating = float(critics_rating_element.text.replace(",", ".")) if critics_rating_element else None
+
+               audience_rating_element = film_container.find("div", {"class": "rating-item"}).find("span", {"class": "stareval-note"})
+               audience_rating = float(audience_rating_element.text.replace(",", ".")) if audience_rating_element else None
+
+               film_data["rating"] = {
+                  "critics": critics_rating,
+                  "audience": audience_rating
+               }
+
+               synopsis_element = film_container.find("div", {"class": "synopsis"})
+               film_data["synopsis"] = synopsis_element.find("div", {"class": "content-txt"}).text.strip() if synopsis_element and synopsis_element.find("div", {"class": "content-txt"}) else None
+
+               clean_title = re.sub(r'\W+', '', film_data["title"]) if film_data["title"] else None
+               film_data["image"] = os.path.join("Covers", f"{clean_title}.jpg").replace("\\", "/") if clean_title else None
+
+               film_number += 1
+               films_dico["data"].append(film_data)
+
+           except Exception as e:
+               pass
 
     else:
         print(f"Final Titles: {[film['title']
@@ -518,6 +641,10 @@ def scrape_page(parser, url_template, max_page, page_type):
                 new_data = parse_to_data([soup], page_type)
             elif page_type == "serie":
                 new_data = parse_to_data([soup], page_type)
+            elif page_type == "everyfilm":
+                new_data = parse_to_data([soup], page_type)
+            elif page_type == "everyserie":
+                new_data = parse_to_data([soup], page_type)
             else:
                 print(f"Unknown page type: {page_type}.")
                 return
@@ -647,10 +774,12 @@ def main():
             command = sys.argv[1].lower()
 
             if command == 'clean':
+                print("Supression des données...")
                 clean_data()
                 return
 
             elif command == 'clean-all':
+                print("Supression des données...")
                 clean_alldata()
                 return
 
@@ -676,7 +805,8 @@ def main():
             elif command == 'help':
                 print("List of commands:")
                 print("- clean: Clean data.json and the Covers folder.")
-                print("- clean-all: Clean data.json, the Covers folder and the Tri folder.")
+                print(
+                    "- clean-all: Clean data.json, the Covers folder and the Tri folder.")
                 print("- serie [genre]: Scrape best series pages by genre.")
                 print("- film [genre]: Scrape best film pages by genre.")
                 print("- tri: Tri series and films.")
@@ -717,7 +847,7 @@ def main():
                     print("Executing everyserie command...")
                     page_url = parser['Urls']['page_url_everyserie']
                     max_page = int(parser['Urls']['page_number_everyserie'])
-                    scrape_page(parser, page_url, max_page, 'serie')
+                    scrape_page(parser, page_url, max_page, 'everyserie')
                     print("Executing tri command...")
                     with open('data.json', 'r', encoding='utf-8') as file:
                         data = json.load(file)
@@ -736,7 +866,7 @@ def main():
                     print("Executing everyfilm command...")
                     page_url = parser['Urls']['page_url_everyfilm']
                     max_page = int(parser['Urls']['page_number_everyfilm'])
-                    scrape_page(parser, page_url, max_page, 'action')
+                    scrape_page(parser, page_url, max_page, 'everyfilm')
                     print("Executing tri command...")
                     with open('data.json', 'r', encoding='utf-8') as file:
                         data = json.load(file)
@@ -756,14 +886,14 @@ def main():
                     max_page_everyfilm = int(
                         parser['Urls']['page_number_everyfilm'])
                     scrape_page(parser, page_url_everyfilm,
-                                max_page_everyfilm, 'action')
+                                max_page_everyfilm, 'everyaction')
 
                     print("Executing everyserie command...")
                     page_url_everyserie = parser['Urls']['page_url_everyserie']
                     max_page_everyserie = int(
                         parser['Urls']['page_number_everyserie'])
                     scrape_page(parser, page_url_everyserie,
-                                max_page_everyserie, 'serie')
+                                max_page_everyserie, 'everyserie')
 
                     with open('data.json', 'r', encoding='utf-8') as file:
                         data = json.load(file)
