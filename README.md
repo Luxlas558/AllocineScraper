@@ -169,7 +169,7 @@ python scraper.py clean-all
 ### Série [genre]: 
 
 Cette commande scrape les pages de séries en fonction du genre spécifié. Remplacez [genre] par le genre de votre choix parmi les suivants : 
-```meilleur, action, animation, aventure, biopic, comedie, comedie-dramatique, drame, epouvante-horreur, espionnage, famille, fantastique, historique, judiciaire, policier, romance, science-fiction, thriller``` 
+```action, animation, aventure, biopic, comedie, comedie-dramatique, drame, epouvante-horreur, espionnage, famille, fantastique, historique, judiciaire, policier, romance, science-fiction, thriller``` 
 
 Utilisez la commande suivante dans le terminal :
 ```bash
