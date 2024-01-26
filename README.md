@@ -142,6 +142,13 @@ Le script utilise ChromeDriver pour automatiser le navigateur Chrome. Si vous ne
 
 Le script prend en charge plusieurs commandes pour différents types de scraping. Voici la liste des commandes disponibles :
 
+
+### Help:
+Cette commande affiche la liste des commandes disponibles et des genres pris en charge. Utilisez la commande suivante dans le terminal :
+```bash
+python scraper.py help
+```
+
 ### Clean: 
 Cette commande nettoie le fichier data.json et le dossier Covers. Utilisez la commande suivante dans le terminal :
 
@@ -159,7 +166,7 @@ python scraper.py clean-all
 ### Série [genre]: 
 
 Cette commande scrape les pages de séries en fonction du genre spécifié. Remplacez [genre] par le genre de votre choix parmi les suivants : 
-```meilleur, action, animation, aventure, biopic, comedie, comedie-dramatique, drame, epouvante-horreur, espionnage, famille, fantastique, historique, judiciaire, policier, romance, science-fiction, thriller``` 
+```action, animation, aventure, biopic, comedie, comedie-dramatique, drame, epouvante-horreur, espionnage, famille, fantastique, historique, judiciaire, policier, romance, science-fiction, thriller``` 
 
 Utilisez la commande suivante dans le terminal :
 ```bash
@@ -182,7 +189,7 @@ La commande `serie-all` permet de scraper toutes les pages des séries pour chaq
 Utilisez la commande suivante dans le terminal :
 
 ```bash
-python script.py serie-all
+python scraper.py serie-all
 ```
 
 ## Film-all
@@ -191,7 +198,7 @@ La commande film-all permet de scraper toutes les pages des meilleurs films pour
 
 Utilisez la commande suivante dans le terminal :
 ```bash
-python script.py film-all
+python scraper.py film-all
 ```
 
 ## All
@@ -199,7 +206,7 @@ python script.py film-all
 La commande all permet de scraper toutes les pages, à la fois des séries et des films, pour chaque genre spécifié. Elle fait ensuite la commande tri pour trier les series et les films séparement. Ensuite elle exécute la commande clean pour supprimer le dossier Covers vide et data.json.
 
 ```bash
-python script.py all
+python scraper.py all
 ```
 
 ## Everyfilm
@@ -208,7 +215,7 @@ La commande everyfilm permet de scraper toutes les pages des films sans genre sp
 ⚠️ Cette commande prend beaucoup de temps à s'executer entierement ⚠️
 
 ```bash
-python script.py everyfilm
+python scraper.py everyfilm
 ```
 
 ## Everyserie
@@ -217,7 +224,7 @@ La commande everyserie permet de scraper toutes les pages des series sans genre 
 ⚠️ Cette commande prend beaucoup de temps à s'executer entierement ⚠️
 
 ```bash
-python script.py everyserie
+python scraper.py everyserie
 ```
 
 ## Everyall
@@ -226,7 +233,7 @@ La commande everyall permet de scraper toutes les pages des films et des series 
 ⚠️ Cette commande prend beaucoup de temps à s'executer entierement ⚠️
 
 ```bash
-python script.py everyall
+python scraper.py everyall
 ```
 
 
@@ -239,11 +246,57 @@ Utilisez la commande suivante dans le terminal :
 python scraper.py tri
 ```
 
-### Help:
-Cette commande affiche la liste des commandes disponibles et des genres pris en charge. Utilisez la commande suivante dans le terminal :
-```bash
-python scraper.py help
+### Base de données
+
+
+#### Fichier de Configuration (config.ini)
+
+Le fichier config.ini doit être configuré avec les informations nécessaires pour la connexion à la base de données. Voici un exemple de configuration pour la section [Database] :
+
+```ini
+[Database]
+host = HOSTNAME
+database = DATABASENAME
+user = USERNAME
+password = PASSWORD
 ```
+
+Assurez-vous de remplacer HOSTNAME, DATABASENAME, USERNAME et PASSWORD par les valeurs appropriées pour votre configuration de base de données.
+
+#### Film
+
+Pour mettre à jour la base de données des films, utilisez la commande suivante :
+
+```bash
+python scraper.py databasefilm
+```
+
+#### Série
+
+Pour mettre à jour la base de données des séries, utilisez la commande suivante :
+
+```bash
+python scraper.py databaseserie
+```
+
+##### All 
+
+Pour mettre à jour la base de données des films et des séries, utilisez la commande suivante :
+
+```bash
+python scraper.py databaseall
+```
+
+## Interface
+
+Cette commande ouvre une interface graphique pour le scrapper pour eviter de taper les commandes :
+⚠️ Cette commande n'est pas encore stable, des bugs peuvents ce produire ⚠️
+⚠️ Toutes les commandes ne sont pas disponible sur l'interface graphique ⚠️
+
+```bash
+python scraper.py interface
+```
+
 
 ## Données Scrapées
 
@@ -295,18 +348,25 @@ Le fichier de configuration **config.ini** est essentiel pour personnaliser le c
 Voici comment le configurer :
 
 ```ini
-[Url]
-page_url = https://www.allocine.fr/film/aucinema/?page=
-page_number = 1
+[Urls]
+
+page_url_film_cinema = https://www.allocine.fr/film/aucinema/?page=
+start_page_film_cinema = 1
+max_page_number_film_cinema = 14
+
 
 [Files]
 output_file = data.json
 ```
 
+
 Assurez-vous d'ajuster les valeurs en fonction de vos besoins :
+
 - `page_url` : Spécifiez l'URL des pages à parcourir.
-(Ne fonctionne que sur la page aucinema de Allocine pour l'instant)
-- `page_number` : Définissez le nombre de pages à parcourir sur la page au cinema.<br> (⚠️ La page_number est par defaut au maximum, ne dépasser pas le maximun ⚠️)
+(Ne fonctionne que sur la page au cinéma d'Allociné pour l'instant)
+- `start_page` : Définissez la page précise où le script va commencer à parcourir le site.<br>
+- `max_page` : Définissez la page où le script va s'arrêter
+(⚠️ La max_page est par défaut au maximum, ne dépassez pas le maximum ⚠️)
         
 Le fichier de configuration est prêt à être utilisé. Vous pouvez ajuster ces valeurs à tout moment en fonction de vos besoins spécifiques.
 
