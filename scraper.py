@@ -23,8 +23,6 @@ import subprocess
 import mysql.connector
 from mysql.connector import Error
 import configparser
-
-
 def download_and_extract_chromedriver():
     if not os.path.isfile("chromedriver.exe"):
         print("Téléchargement du pilote ChromeDriver...")
@@ -37,8 +35,6 @@ def download_and_extract_chromedriver():
         print("Pilote ChromeDriver téléchargé et extrait.")
     else:
         print("")
-
-
 def scroll_to_bottom(driver):
     current_height = driver.execute_script(
         "return Math.max( document.body.scrollHeight, document.body.offsetHeight, document.documentElement.clientHeight, document.documentElement.scrollHeight, document.documentElement.offsetHeight );")
@@ -47,13 +43,9 @@ def scroll_to_bottom(driver):
         time.sleep(0.1)
     driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
     time.sleep(1)
-
-
 def clean_title_from_date(title):
     cleaned_title = re.sub(r'\([^)]*\)', '', title).strip()
     return cleaned_title
-
-
 def download_and_save_image(url, title):
     clean_title = re.sub(r'\W+', '', title)
     base_image_path = os.path.join("Covers", f"{clean_title}.jpg")
@@ -76,8 +68,6 @@ def download_and_save_image(url, title):
     else:
         print(f"Échec du téléchargement de l'image pour {
               title}. Code de statut : {response.status_code}")
-
-
 def url_to_parse(url="") -> BeautifulSoup:
     driver = None
     try:
@@ -96,8 +86,6 @@ def url_to_parse(url="") -> BeautifulSoup:
     finally:
         if driver:
             driver.quit()
-
-
 def parse_to_data(soup_list=[], page_type="") -> dict:
     film_number = 0
     films_dico = {"data_number": film_number, "data": []}
@@ -116,7 +104,7 @@ def parse_to_data(soup_list=[], page_type="") -> dict:
                         description_element = film_container.find(
                             "div", {"class": "meta-body-item meta-body-info"})
                         description = description_element.text.replace(
-                            "\n", " ").strip().split("/") if description_element else []
+                            "\n", " ").strip().split("|") if description_element else []
                         film_data["release_date"] = description[0].strip(
                         ) if description and len(description) > 0 else None
                         film_data["length"] = description[1].strip(
@@ -183,7 +171,7 @@ def parse_to_data(soup_list=[], page_type="") -> dict:
                             img_url, film_data["title"]) if img_url else None
                         if info_element:
                             duration_and_genres = info_element.get_text(
-                                strip=True).split('/')
+                                strip=True).split('|')
                             film_data["length"] = duration_and_genres[0].strip() if len(
                                 duration_and_genres) > 0 else None
                             film_data["genres"] = [genre.strip() for genre in duration_and_genres[1].split(",")] if len(
@@ -252,18 +240,14 @@ def parse_to_data(soup_list=[], page_type="") -> dict:
                     audience_rating = float(audience_rating_element.text.replace(
                         ",", ".")) if audience_rating_element else None
                     film_data["rating"] = {
-                        "critics": critics_rating,
-                        "audience": audience_rating
-                    }
+                        "critics": critics_rating, "audience": audience_rating}
                     synopsis_element = film_container.find(
                         "div", {"class": "synopsis"})
                     if synopsis_element:
                         content_txt_element = synopsis_element.find(
                             "div", {"class": "content-txt"})
-                        if content_txt_element:
-                            film_data["synopsis"] = content_txt_element.text.strip()
-                        else:
-                            film_data["synopsis"] = None
+                        film_data["synopsis"] = content_txt_element.text.strip(
+                        ) if content_txt_element else None
                     else:
                         film_data["synopsis"] = None
                     clean_title = re.sub(
@@ -420,13 +404,9 @@ def parse_to_data(soup_list=[], page_type="") -> dict:
         print(f"Unknown page type: {page_type}.")
     films_dico["data_number"] = film_number
     return films_dico
-
-
 def data_to_json(data=None, filename="data.json") -> None:
     with open(filename, 'w', encoding='utf8') as json_file:
         json.dump(data, json_file, ensure_ascii=False, indent=4)
-
-
 def data_to_csv(data: dict = None, filename="data.csv") -> None:
     data_frame = {
         "title": [film["title"] for film in data["data"]],
@@ -442,8 +422,6 @@ def data_to_csv(data: dict = None, filename="data.csv") -> None:
     }
     data_frame = pd.DataFrame.from_dict(data_frame)
     data_frame.to_csv(filename, index=False, header=True, encoding='utf-8')
-
-
 def load_existing_data(filename="data.json") -> dict:
     if os.path.isfile(filename) and os.path.getsize(filename) > 0:
         with open(filename, 'r', encoding='utf8') as json_file:
@@ -454,8 +432,6 @@ def load_existing_data(filename="data.json") -> dict:
             json.dump(default_data, json_file, indent=4)
         existing_data = default_data
     return existing_data
-
-
 def update_existing_data(existing_data: dict, new_films: list) -> dict:
     new_films = [new_film for new_film in new_films if new_film['synopsis'] not in [
         film['synopsis'] for film in existing_data['data']]]
@@ -466,8 +442,6 @@ def update_existing_data(existing_data: dict, new_films: list) -> dict:
     existing_data['data'].extend(new_films)
     existing_data['data_number'] = len(existing_data['data'])
     return existing_data
-
-
 def clean_data():
     try:
         if os.path.exists("data.json"):
@@ -478,8 +452,6 @@ def clean_data():
             print("Dossier Covers supprimé avec succès.")
     except Exception as e:
         pass
-
-
 def clean_alldata():
     try:
         if os.path.exists("data.json"):
@@ -499,8 +471,6 @@ def clean_alldata():
             pass
     except Exception as e:
         pass
-
-
 def trier_series_films(data):
     initial_covers_directory = 'Covers'
     series_data = {"data_number": 0, "data": []}
@@ -525,8 +495,6 @@ def trier_series_films(data):
             cover_path = os.path.join(
                 initial_covers_directory, os.path.basename(item['image']))
             cover_type = 'cover_serie' if item['type'] == 'serie' else 'cover_film'
-            print(f"Déplacement de l'image {
-                  cover_path} vers Tri/series-films/{cover_type}...")
             if os.path.exists(cover_path):
                 destination_directory = os.path.join(
                     'Tri/series-films', cover_type)
@@ -537,16 +505,13 @@ def trier_series_films(data):
                 try:
                     if os.path.exists(destination_path):
                         os.remove(destination_path)
-                        print(f"Image existante supprimée à {
-                              destination_path}")
                     shutil.move(cover_path, destination_path)
-                    print(f"Image déplacée avec succès à {destination_path}")
-                    data['data'][i]['image'] = os.path.join(
-                        destination_directory, os.path.basename(destination_path))
+                    data['data'][i]['image'] = os.path.basename(destination_path)
                 except Exception as e:
-                    print(f"Erreur lors du déplacement de l'image : {e}")
-            else:
-                pass
+                    pass
+    for item in data['data']:
+        if 'image' in item:
+            item['image'] = item['image'].replace("Covers/", "")
     covers_directory = initial_covers_directory
     try:
         for file_name in os.listdir(covers_directory):
@@ -557,17 +522,14 @@ def trier_series_films(data):
                 elif os.path.isdir(file_path):
                     shutil.rmtree(file_path)
             except Exception as e:
-                print(
-                    f"Erreur lors de la suppression du fichier/dossier {file_path}: {e}")
+                pass
     except Exception as e:
-        print(f"Erreur lors de la suppression du contenu du dossier {
-              covers_directory}: {e}")
+        pass
     with open('Tri/series-films/film.json', 'w', encoding='utf-8') as films_file:
         json.dump(films_data, films_file, ensure_ascii=False, indent=4)
     with open('Tri/series-films/serie.json', 'w', encoding='utf-8') as series_file:
         json.dump(series_data, series_file, ensure_ascii=False, indent=4)
-
-
+    print("Le tri est terminé.")
 def scrape_page(parser, url_template, max_page, page_type, start_page):
     try:
         start_page = int(start_page)
@@ -601,7 +563,6 @@ def scrape_page(parser, url_template, max_page, page_type, start_page):
                 data_to_json(updated_data, output_file)
             else:
                 data_to_json(updated_data, output_file)
-
 def databaseserie():
     try:
         with open('./Tri/series-films/serie.json', 'r', encoding='utf-8') as file:
@@ -609,23 +570,18 @@ def databaseserie():
     except FileNotFoundError:
         print("Le fichier serie.json n'a pas été trouvé.")
         sys.exit()
-
     config = configparser.ConfigParser()
     config.read('config.ini')
-
     db_config = {
         'host': config['Database']['host'],
         'database': config['Database']['database'],
         'user': config['Database']['user'],
         'password': config['Database']['password'],
     }
-
     try:
         connection = mysql.connector.connect(**db_config)
-
         if connection.is_connected():
             cursor = connection.cursor()
-
             create_table_query = '''
             CREATE TABLE IF NOT EXISTS series (
                 id INT AUTO_INCREMENT PRIMARY KEY,
@@ -640,44 +596,40 @@ def databaseserie():
             '''
             cursor.execute(create_table_query)
             print("La table 'series' a été créée avec succès.")
-
             insert_query = '''
             INSERT IGNORE INTO series (titre, annee, genre, acteurs, synopsis, image)
             VALUES (%s, %s, %s, %s, %s, %s)
             '''
-            
             for serie in serie_data["data"]:
                 image_path = serie.get('image', '')
                 image_filename = os.path.basename(image_path)
-                
                 record = tuple(None if v == '' else v for v in (
                     serie.get('title', ''),
-                    serie.get('release_date', '').split(' ')[-1] if 'release_date' in serie else 0,
-                    ' '.join(serie.get('genres', [])) if 'genres' in serie else '',
-                    ', '.join(serie.get('actors', [])) if 'actors' in serie else '',
+                    serie.get('release_date', '').split(
+                        ' ')[-1] if 'release_date' in serie else 0,
+                    ' '.join(serie.get('genres', [])
+                             ) if 'genres' in serie else '',
+                    ', '.join(serie.get('actors', [])
+                              ) if 'actors' in serie else '',
                     serie.get('synopsis', ''),
                     image_filename,
                 ))
-                
                 try:
                     print(f"Insertion de la série : {serie.get('title', '')}")
                     cursor.execute(insert_query, record)
                 except mysql.connector.Error as err:
-                    print(f"Une erreur s'est produite pendant l'insertion : {err}")
+                    print(
+                        f"Une erreur s'est produite pendant l'insertion : {err}")
             connection.commit()
-
     except mysql.connector.Error as e:
         print(f"Erreur pendant l'insertion des données : {e}")
-
     except Exception as e:
         print(f"Une erreur s'est produite : {e}")
-
     finally:
         if connection.is_connected():
             cursor.close()
             connection.close()
             print("Toutes les données ont été insérées avec succès.")
-            
 def databasefilm():
     try:
         with open('./Tri/series-films/film.json', 'r', encoding='utf-8') as file:
@@ -685,23 +637,18 @@ def databasefilm():
     except FileNotFoundError:
         print("Le fichier film.json n'a pas été trouvé.")
         sys.exit()
-
     config = configparser.ConfigParser()
     config.read('config.ini')
-
     db_config = {
         'host': config['Database']['host'],
         'database': config['Database']['database'],
         'user': config['Database']['user'],
         'password': config['Database']['password'],
     }
-
     try:
         connection = mysql.connector.connect(**db_config)
-
         if connection.is_connected():
             cursor = connection.cursor()
-
             create_table_query = '''
             CREATE TABLE IF NOT EXISTS films (
                 id INT AUTO_INCREMENT PRIMARY KEY,
@@ -721,25 +668,26 @@ def databasefilm():
             '''
             cursor.execute(create_table_query)
             print("La table 'films' a été créée avec succès.")
-
             insert_query = '''
             INSERT IGNORE INTO films (titre, annee, genre, duree, note, acteurs, realisateur, synopsis, image, critics_rating, audience_rating)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             '''
-
             for film in film_data["data"]:
                 image_path = film.get('image', '')
                 image_filename = os.path.basename(image_path)
                 record = (
                     film.get('title', ''),
-                    film.get('release_date', '').split(' ')[-1] if 'release_date' in film else 0,
-                    ' '.join(film.get('genres', [])) if 'genres' in film else '',
+                    film.get('release_date', '').split(
+                        ' ')[-1] if 'release_date' in film else 0,
+                    ' '.join(film.get('genres', [])
+                             ) if 'genres' in film else '',
                     film.get('length', 0),
                     film.get('rating', {}).get('critics', 0.0),
-                    ', '.join(film.get('actors', [])) if 'actors' in film else '',
+                    ', '.join(film.get('actors', [])
+                              ) if 'actors' in film else '',
                     film.get('director', ''),
                     film.get('synopsis', ''),
-                    image_filename, 
+                    image_filename,
                     film.get('rating', {}).get('critics', 0.0),
                     film.get('rating', {}).get('audience', 0.0)
                 )
@@ -749,19 +697,15 @@ def databasefilm():
                 except mysql.connector.Error as err:
                     print(f"An error occurred: {err}")
             connection.commit()
-
     except mysql.connector.Error as e:
         print(f"Erreur pendant l'insertion des données : {e}")
-
     except Exception as e:
         print(f"Une erreur s'est produite : {e}")
-
     finally:
         if connection.is_connected():
             cursor.close()
             connection.close()
             print("Toutes les données ont été insérées avec succès.")
-
 def afficher_interface():
     def lancer_scraper():
         site = site_var.get()
@@ -773,27 +717,22 @@ def afficher_interface():
             commande = f"python scraper.py {type_media} {genre} --tri"
         subprocess.run(commande, shell=True)
         root.update_idletasks()
-
     def lancer_all():
         commande = "python scraper.py all"
         subprocess.run(commande, shell=True)
         root.update_idletasks()
-
     def lancer_everyall():
         commande = "python scraper.py everyall"
         subprocess.run(commande, shell=True)
         root.update_idletasks()
-
     def lancer_tri():
         commande = "python scraper.py tri"
         subprocess.run(commande, shell=True)
         root.update_idletasks()
-
     def lancer_clean():
         commande = "python scraper.py clean"
         subprocess.run(commande, shell=True)
         root.update_idletasks()
-
     def update_genres(*args):
         selected_type_media = type_media_var.get()
         new_genres = genres_film if selected_type_media == 'Film' else genres_serie
@@ -849,8 +788,6 @@ def afficher_interface():
         frame.grid_columnconfigure(0, weight=1)
         frame.grid_columnconfigure(1, weight=1)
     root.mainloop()
-
-
 def main():
     parser = ConfigParser()
     parser.read("config.ini")
@@ -884,22 +821,18 @@ def main():
                 start_page = int(parser['Urls'][f'start_page_{command}'])
                 max_page = int(parser['Urls'][f'max_page_number_{command}'])
                 scrape_page(parser, page_url, max_page, 'action')
-
             elif command == 'databasefilm':
                 print("Executing film database command...")
                 databasefilm()
-                
             elif command == 'databaseserie':
                 print("Executing serie database command...")
                 databaseserie()
-            
             elif command == 'databaseall':
                 print("Executing databaseall command...")
                 print("Executing film database command...")
                 databasefilm()
                 print("Executing serie database command...")
                 databaseserie()
-
             elif command == 'everyserie':
                 try:
                     print("Executing everyserie command...")
@@ -1114,7 +1047,6 @@ def main():
                 print("- interface : Start the interface.")
                 print("-------------------------------------")
                 print("List of genres:")
-                print("- cinema: Scrape cinema pages.")
                 print("- action: Scrape action pages.")
                 print("- animation: Scrape animation pages.")
                 print("- aventure: Scrape aventure pages.")
@@ -1139,8 +1071,6 @@ def main():
                 return
     except Exception as e:
         pass
-
-
 if __name__ == "__main__":
     main()
     if len(sys.argv) > 1 and sys.argv[1].lower() == 'tri':
