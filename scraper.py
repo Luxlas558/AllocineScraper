@@ -602,8 +602,91 @@ def scrape_page(parser, url_template, max_page, page_type, start_page):
             else:
                 data_to_json(updated_data, output_file)
 
+def databaseserie():
+    try:
+        with open('./Tri/series-films/serie.json', 'r', encoding='utf-8') as file:
+            serie_data = json.load(file)
+    except FileNotFoundError:
+        print("Le fichier serie.json n'a pas été trouvé.")
+        sys.exit()
 
-def database():
+    config = configparser.ConfigParser()
+    config.read('config.ini')
+
+    db_config = {
+        'host': config['Database']['host'],
+        'database': config['Database']['database'],
+        'user': config['Database']['user'],
+        'password': config['Database']['password'],
+    }
+
+    try:
+        connection = mysql.connector.connect(**db_config)
+
+        if connection.is_connected():
+            cursor = connection.cursor()
+
+            create_table_query = '''
+            CREATE TABLE IF NOT EXISTS series (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                titre VARCHAR(191),
+                annee INT,
+                genre VARCHAR(255),
+                duree VARCHAR(100),
+                note FLOAT,
+                acteurs TEXT,
+                createur VARCHAR(255),
+                synopsis TEXT,
+                image VARCHAR(255),
+                critics_rating FLOAT,
+                audience_rating FLOAT,
+                UNIQUE KEY unique_title (titre)
+            )
+            '''
+            cursor.execute(create_table_query)
+            print("La table 'series' a été créée avec succès.")
+
+            insert_query = '''
+            INSERT IGNORE INTO series (titre, annee, genre, duree, note, acteurs, createur, synopsis, image, critics_rating, audience_rating)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            '''
+            
+            for serie in serie_data["data"]:
+                image_path = serie.get('image', '')
+                image_filename = os.path.basename(image_path)
+                record = (
+                    serie.get('title', ''),
+                    serie.get('release_date', '').split(' ')[-1] if 'release_date' in serie else 0,
+                    ' '.join(serie.get('genres', [])) if 'genres' in serie else '',
+                    serie.get('length', ''),
+                    serie.get('rating', {}).get('critics', 0.0),
+                    ', '.join(serie.get('actors', [])) if 'actors' in serie else '',
+                    serie.get('creator', ''),
+                    serie.get('synopsis', ''),
+                    image_filename,
+                    serie.get('rating', {}).get('critics', 0.0),
+                    serie.get('rating', {}).get('audience', 0.0)
+                )
+                try:
+                    print(f"Insertion de la série : {serie.get('title', '')}")
+                    cursor.execute(insert_query, record)
+                except mysql.connector.Error as err:
+                    print(f"An error occurred: {err}")
+            connection.commit()
+
+    except mysql.connector.Error as e:
+        print(f"Erreur pendant l'insertion des données : {e}")
+
+    except Exception as e:
+        print(f"Une erreur s'est produite : {e}")
+
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+            print("Toutes les données ont été insérées avec succès.")
+
+def databasefilm():
     try:
         with open('./Tri/series-films/film.json', 'r', encoding='utf-8') as file:
             film_data = json.load(file)
@@ -628,12 +711,12 @@ def database():
             cursor = connection.cursor()
 
             create_table_query = '''
-            CREATE TABLE IF NOT EXISTS film (
+            CREATE TABLE IF NOT EXISTS films (
                 id INT AUTO_INCREMENT PRIMARY KEY,
-                titre VARCHAR(255),
+                titre VARCHAR(191),
                 annee INT,
                 genre VARCHAR(255),
-                duree INT,
+                duree VARCHAR(100),
                 note FLOAT,
                 acteurs TEXT,
                 realisateur VARCHAR(255),
@@ -641,46 +724,51 @@ def database():
                 image VARCHAR(255),
                 critics_rating FLOAT,
                 audience_rating FLOAT,
-                -- Ajoutez d'autres colonnes selon vos besoins
                 UNIQUE KEY unique_title (titre)
             )
             '''
             cursor.execute(create_table_query)
-            print("La table 'film' a été créée avec succès.")
+            print("La table 'films' a été créée avec succès.")
 
             insert_query = '''
-            INSERT IGNORE INTO film (titre, annee, genre, duree, note, acteurs, realisateur, synopsis, image, critics_rating, audience_rating)
+            INSERT IGNORE INTO films (titre, annee, genre, duree, note, acteurs, realisateur, synopsis, image, critics_rating, audience_rating)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             '''
 
-            for film in film_data:
+            for film in film_data["data"]:
+                image_path = film.get('image', '')
+                image_filename = os.path.basename(image_path)
                 record = (
                     film.get('title', ''),
-                    film.get('year', 0),
-                    '|'.join(film.get('genres', [])),
+                    film.get('release_date', '').split(' ')[-1] if 'release_date' in film else 0,
+                    ' '.join(film.get('genres', [])) if 'genres' in film else '',
                     film.get('length', 0),
                     film.get('rating', {}).get('critics', 0.0),
-                    ', '.join(film.get('actors', [])),
+                    ', '.join(film.get('actors', [])) if 'actors' in film else '',
                     film.get('director', ''),
                     film.get('synopsis', ''),
-                    film.get('image', ''),
+                    image_filename, 
                     film.get('rating', {}).get('critics', 0.0),
                     film.get('rating', {}).get('audience', 0.0)
                 )
-                cursor.execute(insert_query, record)
-
+                try:
+                    print(f"Insertion du film : {film.get('title', '')}")
+                    cursor.execute(insert_query, record)
+                except mysql.connector.Error as err:
+                    print(f"An error occurred: {err}")
             connection.commit()
-            print("Les données ont été insérées avec succès dans la table 'film'.")
 
-    except Error as e:
-        print(f"Erreur : {e}")
+    except mysql.connector.Error as e:
+        print(f"Erreur pendant l'insertion des données : {e}")
+
+    except Exception as e:
+        print(f"Une erreur s'est produite : {e}")
 
     finally:
         if connection.is_connected():
             cursor.close()
             connection.close()
-            print("La connexion à la base de données est fermée.")
-
+            print("Toutes les données ont été insérées avec succès.")
 
 def afficher_interface():
     def lancer_scraper():
@@ -805,9 +893,20 @@ def main():
                 max_page = int(parser['Urls'][f'max_page_number_{command}'])
                 scrape_page(parser, page_url, max_page, 'action')
 
-            elif command == 'database':
-                print("Executing database command...")
-                database()
+            elif command == 'databasefilm':
+                print("Executing film database command...")
+                databasefilm()
+                
+            elif command == 'databaseserie':
+                print("Executing serie database command...")
+                databaseserie()
+            
+            elif command == 'databaseall':
+                print("Executing databaseall command...")
+                print("Executing film database command...")
+                databasefilm()
+                print("Executing serie database command...")
+                databaseserie()
 
             elif command == 'everyserie':
                 try:
@@ -1017,6 +1116,9 @@ def main():
                 print("- everyserie : Scrape all pages of series.")
                 print("- everyfilm : Scrape all pages of films.")
                 print("- everyall : Scrape all pages of series and films.")
+                print("- databasefilm : Send sorted film data to the database.")
+                print("- databaseserie : Send sorted serie data to the database.")
+                print("- databaseall : Send all sorted data to the database.")
                 print("- interface : Start the interface.")
                 print("-------------------------------------")
                 print("List of genres:")

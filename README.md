@@ -142,14 +142,11 @@ Le script utilise ChromeDriver pour automatiser le navigateur Chrome. Si vous ne
 
 Le script prend en charge plusieurs commandes pour différents types de scraping. Voici la liste des commandes disponibles :
 
-## Interface
 
-Cette commande ouvre une interface graphique pour le scrapper pour eviter de taper les commandes :
-⚠️ Cette commande n'est pas encore stable, des bugs peuvents ce produire ⚠️
-⚠️ Toutes les commandes ne sont pas disponible sur l'interface graphique ⚠️
-
+### Help:
+Cette commande affiche la liste des commandes disponibles et des genres pris en charge. Utilisez la commande suivante dans le terminal :
 ```bash
-python scraper.py interface
+python scraper.py help
 ```
 
 ### Clean: 
@@ -249,11 +246,57 @@ Utilisez la commande suivante dans le terminal :
 python scraper.py tri
 ```
 
-### Help:
-Cette commande affiche la liste des commandes disponibles et des genres pris en charge. Utilisez la commande suivante dans le terminal :
-```bash
-python scraper.py help
+### Base de données
+
+
+#### Fichier de Configuration (config.ini)
+
+Le fichier config.ini doit être configuré avec les informations nécessaires pour la connexion à la base de données. Voici un exemple de configuration pour la section [Database] :
+
+```ini
+[Database]
+host = HOSTNAME
+database = DATABASENAME
+user = USERNAME
+password = PASSWORD
 ```
+
+Assurez-vous de remplacer HOSTNAME, DATABASENAME, USERNAME et PASSWORD par les valeurs appropriées pour votre configuration de base de données.
+
+#### Film
+
+Pour mettre à jour la base de données des films, utilisez la commande suivante :
+
+```bash
+python scraper.py databasefilm
+```
+
+#### Série
+
+Pour mettre à jour la base de données des séries, utilisez la commande suivante :
+
+```bash
+python scraper.py databaseserie
+```
+
+##### All 
+
+Pour mettre à jour la base de données des films et des séries, utilisez la commande suivante :
+
+```bash
+python scraper.py databaseall
+```
+
+## Interface
+
+Cette commande ouvre une interface graphique pour le scrapper pour eviter de taper les commandes :
+⚠️ Cette commande n'est pas encore stable, des bugs peuvents ce produire ⚠️
+⚠️ Toutes les commandes ne sont pas disponible sur l'interface graphique ⚠️
+
+```bash
+python scraper.py interface
+```
+
 
 ## Données Scrapées
 
