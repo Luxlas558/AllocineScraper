@@ -307,7 +307,7 @@ def parse_to_data(soup_list=[], page_type="") -> dict:
                         img_url, film_data["title"]) if img_url else None
                     if info_element:
                         date_duration_genres = info_element.get_text(
-                            strip=True).split('/')
+                            strip=True).split('|')
                         film_data["release_date"] = date_duration_genres[0].strip()
                         film_data["length"] = date_duration_genres[1].strip() if len(
                             date_duration_genres) > 1 else None
@@ -377,7 +377,7 @@ def parse_to_data(soup_list=[], page_type="") -> dict:
                         img_url, film_data["title"]) if img_url else None
                     if info_element:
                         date_duration_genres = info_element.get_text(
-                            strip=True).split('/')
+                            strip=True).split('|')
                         film_data["release_date"] = date_duration_genres[0].strip()
                         film_data["length"] = date_duration_genres[1].strip() if len(
                             date_duration_genres) > 1 else None
@@ -632,14 +632,9 @@ def databaseserie():
                 titre VARCHAR(191),
                 annee INT,
                 genre VARCHAR(255),
-                duree VARCHAR(100),
-                note FLOAT,
                 acteurs TEXT,
-                createur VARCHAR(255),
                 synopsis TEXT,
                 image VARCHAR(255),
-                critics_rating FLOAT,
-                audience_rating FLOAT,
                 UNIQUE KEY unique_title (titre)
             )
             '''
@@ -647,31 +642,28 @@ def databaseserie():
             print("La table 'series' a été créée avec succès.")
 
             insert_query = '''
-            INSERT IGNORE INTO series (titre, annee, genre, duree, note, acteurs, createur, synopsis, image, critics_rating, audience_rating)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            INSERT IGNORE INTO series (titre, annee, genre, acteurs, synopsis, image)
+            VALUES (%s, %s, %s, %s, %s, %s)
             '''
             
             for serie in serie_data["data"]:
                 image_path = serie.get('image', '')
                 image_filename = os.path.basename(image_path)
-                record = (
+                
+                record = tuple(None if v == '' else v for v in (
                     serie.get('title', ''),
                     serie.get('release_date', '').split(' ')[-1] if 'release_date' in serie else 0,
                     ' '.join(serie.get('genres', [])) if 'genres' in serie else '',
-                    serie.get('length', ''),
-                    serie.get('rating', {}).get('critics', 0.0),
                     ', '.join(serie.get('actors', [])) if 'actors' in serie else '',
-                    serie.get('creator', ''),
                     serie.get('synopsis', ''),
                     image_filename,
-                    serie.get('rating', {}).get('critics', 0.0),
-                    serie.get('rating', {}).get('audience', 0.0)
-                )
+                ))
+                
                 try:
                     print(f"Insertion de la série : {serie.get('title', '')}")
                     cursor.execute(insert_query, record)
                 except mysql.connector.Error as err:
-                    print(f"An error occurred: {err}")
+                    print(f"Une erreur s'est produite pendant l'insertion : {err}")
             connection.commit()
 
     except mysql.connector.Error as e:
@@ -685,7 +677,7 @@ def databaseserie():
             cursor.close()
             connection.close()
             print("Toutes les données ont été insérées avec succès.")
-
+            
 def databasefilm():
     try:
         with open('./Tri/series-films/film.json', 'r', encoding='utf-8') as file:
