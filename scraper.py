@@ -814,6 +814,8 @@ def main():
                 max_page = int(
                     parser['Urls'][f'max_page_number_serie_{command}'])
                 scrape_page(parser, page_url, max_page, 'serie')
+
+                
             elif command in ['cinema', 'action', 'animation', 'aventure', 'biopic', 'comedie', 'comedie-dramatique',
                              'drame', 'epouvante-horreur', 'famille', 'fantastique', 'guerre', 'historique',
                              'musical', 'policier', 'romance', 'science-fiction', 'thriller', 'western']:
